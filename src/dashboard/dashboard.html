@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><название> Pro Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+<div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+            </div>
+            <span><название> Pro</span>
+        </div>
+
+        <nav class="nav-menu">
+            <button class="nav-item active" data-tab="overview">
+                <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                Board
+                <span id="navBadgeNew" class="nav-badge" style="display: none;">0</span>
+            </button>
+
+            <button class="nav-item" data-tab="mail">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                Mail
+                <span id="navBadgeMail" class="nav-badge" style="display: none;">0</span>
+            </button>
+
+            <button class="nav-item" data-tab="scripts">
+                <svg class="nav-icon" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                Scripts
+            </button>
+
+            <button class="nav-item" data-tab="logs">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="8" y1="9" x2="10" y2="9"/></svg>
+                LogViewer
+            </button>
+
+            <button class="nav-item" data-tab="settings">
+                <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Settings
+            </button>
+
+            <div class="spacer"></div>
+
+            <button class="nav-item" id="refreshBtn">
+                <span class="icon"><svg class="nav-icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
+                Refresh
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="top-bar">
+            <h1 id="pageTitle">Issue Monitor</h1>
+            <div class="top-bar-right">
+                <span id="lastUpdated" class="last-updated">Updated: -</span>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <!-- Controls -->
+            <div class="controls-bar">
+                <div class="control-group">
+                    <label for="sortSelect">Sort</label>
+                    <select id="sortSelect" class="dash-select">
+                        <option value="newest">Newest first</option>
+                        <option value="oldest">Oldest first</option>
+                        <option value="priority">By priority</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="hoursFilter">Updated (hours)</label>
+                    <input type="number" id="hoursFilter" class="dash-input" placeholder="All" min="1">
+                </div>
+
+                <div class="control-separator"></div>
+
+                <div class="control-group">
+                    <label for="refreshInterval">Auto-refresh (sec)</label>
+                    <input type="number" id="refreshInterval" class="dash-input" placeholder="Off" min="15" style="width: 60px;">
+                </div>
+
+                <div class="control-group" style="margin-left: auto;">
+                    <button id="stopAlarmBtn" class="btn-alarm hidden">
+                        Stop Alarm
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-indicator blue"></div>
+                    <div class="kpi-body">
+                        <div class="kpi-title">Total Active</div>
+                        <div class="kpi-value" id="kpiTotal">-</div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-indicator red"></div>
+                    <div class="kpi-body">
+                        <div class="kpi-title">High Priority</div>
+                        <div class="kpi-value" id="kpiUrgent">-</div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-indicator purple"></div>
+                    <div class="kpi-body">
+                        <div class="kpi-title">On Hold</div>
+                        <div class="kpi-value" id="kpiWait">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kanban Board -->
+            <div class="kanban-board">
+                <div class="kanban-column col-new">
+                    <div class="column-header">
+                        <div class="header-title">
+                            <span class="indicator ind-new"></span>
+                            New
+                        </div>
+                        <span class="count-badge" id="count-new">0</span>
+                    </div>
+                    <div class="issue-list" id="list-new">
+                        <div class="loading-placeholder">Loading...</div>
+                    </div>
+                </div>
+
+                <div class="kanban-column col-work">
+                    <div class="column-header">
+                        <div class="header-title">
+                            <span class="indicator ind-work"></span>
+                            In Progress
+                        </div>
+                        <span class="count-badge" id="count-work">0</span>
+                    </div>
+                    <div class="issue-list" id="list-work">
+                        <div class="loading-placeholder">Loading...</div>
+                    </div>
+                </div>
+
+                <div class="kanban-column col-wait">
+                    <div class="column-header">
+                        <div class="header-title">
+                            <span class="indicator ind-wait"></span>
+                            Waiting
+                        </div>
+                        <span class="count-badge" id="count-wait">0</span>
+                    </div>
+                    <div class="issue-list" id="list-wait">
+                        <div class="loading-placeholder">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scripts Container (hidden by default) -->
+            <div id="scriptsContainer" style="display: none;">
+                <div class="scripts-topbar">
+                    <input type="text" id="scriptsSearch" class="scripts-search" placeholder="Поиск по названию, клиенту или тексту скрипта...">
+                    <div class="scripts-topbar-actions">
+                        <button id="importScriptsBtn" class="btn-add-row">↑ Импорт JSON</button>
+                        <button id="exportScriptsBtn" class="btn-add-row">↓ Экспорт</button>
+                        <button id="addScriptBtn" class="btn-save">+ Добавить</button>
+                    </div>
+                </div>
+                <div id="scriptClientFilters" class="script-filters"></div>
+                <div id="scriptsGrid" class="scripts-grid"></div>
+            </div>
+
+            <!-- Settings Container (hidden by default) -->
+            <div id="settingsContainer" style="display: none;">
+                <div class="settings-page">
+
+                    <!-- ── Две колонки: тогглы слева, поля справа ── -->
+                    <div class="settings-columns">
+
+                        <!-- Левая колонка - переключатели -->
+                        <div class="settings-col">
+
+                            <div class="settings-section">
+                                <h2 class="settings-section-title">Уведомления</h2>
+                                <div class="settings-row">
+                                    <div class="settings-label">
+                                        <span class="settings-label-title">Будильник при новых заявках</span>
+                                        <span class="settings-label-desc">Воспроизводить звук при появлении новых задач или писем</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingAlarm">
+                                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h2 class="settings-section-title">Яндекс Почта</h2>
+                                <div class="settings-row">
+                                    <div class="settings-label">
+                                        <span class="settings-label-title">Кнопка создания заявки</span>
+                                        <span class="settings-label-desc">Показывать кнопку «Создать заявку» в письмах с расхождениями WMS</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingMailCreateBtn" checked>
+                                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h2 class="settings-section-title">Контекстное меню (ПКМ)</h2>
+                                <div class="settings-row">
+                                    <div class="settings-label">
+                                        <span class="settings-label-title">Меню на странице активности</span>
+                                        <span class="settings-label-desc">ПКМ на /activity, /projects и других страницах</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingCtxMenuActivity" checked>
+                                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                    </label>
+                                </div>
+                                <div class="settings-row" style="margin-top: 12px;">
+                                    <div class="settings-label">
+                                        <span class="settings-label-title">Меню на странице тикета</span>
+                                        <span class="settings-label-desc">ПКМ на /issues/123 - скрипты, смена смены и т.д.</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingCtxMenuIssues" checked>
+                                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h2 class="settings-section-title">Страница активности</h2>
+                                <div class="settings-row">
+                                    <div class="settings-label">
+                                        <span class="settings-label-title">Только сегодня и вчера</span>
+                                        <span class="settings-label-desc">При добавлении задач за смену брать только актуальные даты</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingActivityTodayOnly" checked>
+                                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h2 class="settings-section-title">Яндекс Мессенджер</h2>
+                                <div class="settings-row">
+                                    <div class="settings-label">
+                                        <span class="settings-label-title">Слежка за новыми сообщениями</span>
+                                        <span class="settings-label-desc">Запускать будильник при появлении непрочитанных сообщений в messenger.yandex.ru</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingMessengerWatcher" checked>
+                                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                    </label>
+                                </div>
+                                <div class="settings-row">
+                                    <div class="settings-label">
+                                        <span class="settings-label-title">Слежка за <корпоративный мессенджер></span>
+                                        <span class="settings-label-desc">Запускать будильник при появлении непрочитанных каналов или упоминаний на <корпоративный мессенджер></span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingMagnitWatcher" checked>
+                                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h2 class="settings-section-title">Редактирование тикетов</h2>
+                                <div class="settings-row">
+                                    <div class="settings-label">
+                                        <span class="settings-label-title">Приватный комментарий при вставке SQL</span>
+                                        <span class="settings-label-desc">Автоматически ставить галочку «Приватное примечание» при нажатии кнопок SQL и SQL ▾</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingSqlAutoPrivate" checked>
+                                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div><!-- /settings-col left -->
+
+                        <!-- Правая колонка - текстовые поля -->
+                        <div class="settings-col">
+
+                            <div class="settings-section">
+                                <h2 class="settings-section-title">Redmine</h2>
+                                <div class="settings-field">
+                                    <label class="settings-field-label" for="settingRedmineUrls">URL очередей (по одному на строку)</label>
+                                    <textarea id="settingRedmineUrls" class="settings-textarea" rows="4" placeholder="<ссылка>"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h2 class="settings-section-title">Колонки Kanban</h2>
+                                <p class="settings-hint">Статусы через запятую. Регистр не важен.</p>
+                                <div class="settings-field">
+                                    <label class="settings-field-label" for="settingColNew">Новые</label>
+                                    <input type="text" id="settingColNew" class="settings-input" placeholder="Новая, Новая информация, Assigned...">
+                                </div>
+                                <div class="settings-field">
+                                    <label class="settings-field-label" for="settingColWork">В работе</label>
+                                    <input type="text" id="settingColWork" class="settings-input" placeholder="В работе, In Progress...">
+                                </div>
+                                <div class="settings-field">
+                                    <label class="settings-field-label" for="settingColWait">Ожидание</label>
+                                    <input type="text" id="settingColWait" class="settings-input" placeholder="Ожидание, Hold, Отложена...">
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h2 class="settings-section-title">Тихие заявки Redmine (не будят)</h2>
+                                <div class="settings-row">
+                                    <div class="settings-label">
+                                        <span class="settings-label-title">Включить правило</span>
+                                        <span class="settings-label-desc">Новые заявки, подпадающие под условие, видны в канбане, но не запускают будильник</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingSilentEnabled" checked>
+                                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                    </label>
+                                </div>
+                                <div class="settings-field">
+                                    <label class="settings-field-label" for="settingSilentProjects">Проект содержит (через запятую)</label>
+                                    <input type="text" id="settingSilentProjects" class="settings-input" placeholder="Магнит">
+                                    <span class="settings-label-desc">Например: «Магнит» покрывает и «Магнит», и «Магнит Т/П»</span>
+                                </div>
+                                <div class="settings-field">
+                                    <label class="settings-field-label" for="settingSilentSubject">И тема содержит (через запятую)</label>
+                                    <input type="text" id="settingSilentSubject" class="settings-input" placeholder="Проверка HS, Проверка НS">
+                                    <span class="settings-label-desc">Любое совпадение из списка. Пусто - не фильтровать по теме.</span>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h2 class="settings-section-title">Gmail</h2>
+                                <div class="settings-field">
+                                    <label class="settings-field-label" for="settingGmailQuery">Поисковый запрос (Gmail query)</label>
+                                    <input type="text" id="settingGmailQuery" class="settings-input" placeholder='subject:(HealthScript OR Notifier) is:unread -subject:"(Закрыта)"'>
+                                </div>
+                                <div class="settings-field">
+                                    <label class="settings-field-label" for="settingGmailIgnoredPoints">«Тихие» пункты расхождений (через запятую)</label>
+                                    <input type="text" id="settingGmailIgnoredPoints" class="settings-input" placeholder="11, 30">
+                                    <span class="settings-label-desc">Письма, где встречаются ТОЛЬКО эти номера &lt;N&gt;, не запускают будильник.</span>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h2 class="settings-section-title"><Плейсхолдер></h2>
+                                <div class="settings-field">
+                                    <label class="settings-field-label" for="settingMagnitUrgentChannel">ID срочного канала</label>
+                                    <input type="text" id="settingMagnitUrgentChannel" class="settings-input" placeholder="<ID канала>">
+                                    <span class="settings-label-desc">Канал в <корпоративный мессенджер>, где сканируются ключевые слова (ЧС, ЧП, критич., массов и т.д.)</span>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h2 class="settings-section-title">Похожие тикеты</h2>
+                                <div class="settings-row">
+                                    <div class="settings-label">
+                                        <span class="settings-label-title">Показывать похожие случаи</span>
+                                        <span class="settings-label-desc">При открытии тикета и формы создания искать похожие через Redmine /search.json</span>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingSimilarIssues" checked>
+                                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                    </label>
+                                </div>
+                                <div class="settings-field">
+                                    <label class="settings-field-label" for="settingRedmineApiKey">Redmine API key</label>
+                                    <input type="password" id="settingRedmineApiKey" class="settings-input" placeholder="32-символьный ключ из профиля Redmine" autocomplete="off">
+                                    <span class="settings-label-desc">Где взять: Redmine → «Моя учётная запись» → справа блок «Доступ к API» → «Показать». Без ключа поиск не работает (Redmine просит логин/пароль).</span>
+                                </div>
+                            </div>
+
+                        </div><!-- /settings-col right -->
+
+                    </div><!-- /settings-columns -->
+
+                    <!-- ── Маппинг проектов - во всю ширину ── -->
+                    <div class="settings-section">
+                        <h2 class="settings-section-title">Маппинг проектов (Яндекс Почта)</h2>
+                        <p class="settings-hint">Какой проект Redmine подставлять при создании заявки из письма</p>
+
+                        <div class="mapping-columns">
+                            <div class="mapping-subsection">
+                                <div class="mapping-subheader">
+                                    <span class="mapping-subheader-title">По отправителю - SQL Alerts, Верный, DEPO…</span>
+                                    <button id="addSenderRowBtn" class="btn-add-row">+ Добавить</button>
+                                </div>
+                                <div id="senderMappingList" class="mapping-list"></div>
+                            </div>
+
+                            <div class="mapping-subsection">
+                                <div class="mapping-subheader">
+                                    <span class="mapping-subheader-title">По серверу - Ева (<email>)</span>
+                                    <button id="addServerRowBtn" class="btn-add-row">+ Добавить</button>
+                                </div>
+                                <div id="serverMappingList" class="mapping-list"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Кнопка сохранения ── -->
+                    <div class="settings-actions">
+                        <button id="settingsSaveBtn" class="btn-save">Сохранить настройки</button>
+                        <span id="settingsSavedMsg" class="settings-saved-msg"></span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- LogViewer Container (hidden by default) -->
+            <div id="logsContainer" style="display: none;">
+                <div class="lv-toolbar">
+                    <button id="lvLoadBtn" class="lv-btn-load">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        Загрузить .log4j
+                    </button>
+                    <input type="file" id="lvFileInput" accept=".log4j,.log,.xml,.txt" style="display:none">
+
+                    <div class="lv-file-info">
+                        <span id="lvFileName" class="lv-file-name">Файл не выбран</span>
+                        <span id="lvFileSize" class="lv-file-size"></span>
+                    </div>
+
+                    <div class="lv-stats">
+                        <div class="lv-stat">
+                            <span class="lv-stat-label">Событий</span>
+                            <span class="lv-stat-value" id="lvStatEvents">-</span>
+                        </div>
+                        <div class="lv-stat">
+                            <span class="lv-stat-label lv-stat-error">Ошибок</span>
+                            <span class="lv-stat-value lv-stat-error" id="lvStatErrors">-</span>
+                        </div>
+                        <div class="lv-stat">
+                            <span class="lv-stat-label lv-stat-warn">Warning</span>
+                            <span class="lv-stat-value lv-stat-warn" id="lvStatWarns">-</span>
+                        </div>
+                        <div class="lv-stat lv-stat-range">
+                            <span class="lv-stat-label">Диапазон</span>
+                            <span class="lv-stat-value" id="lvStatRange">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lv-progress" id="lvProgress" style="display:none">
+                    <div class="lv-progress-bar"><div class="lv-progress-fill" id="lvProgressFill"></div></div>
+                    <div class="lv-progress-text" id="lvProgressText">Парсинг...</div>
+                </div>
+
+                <div class="lv-filters" id="lvFilters" style="display:none">
+                    <div class="lv-search-wrap">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="text" id="lvSearch" placeholder="Поиск по message, exception, thread, category…" autocomplete="off" spellcheck="false">
+                        <button id="lvSearchClear" class="lv-search-clear" title="Очистить" style="display:none">✕</button>
+                    </div>
+
+                    <div class="lv-level-filters" id="lvLevelFilters">
+                        <button class="lv-lvl-btn active" data-level="DEBUG"><span class="lv-lvl-dot lv-lvl-dot-debug"></span>DEBUG</button>
+                        <button class="lv-lvl-btn active" data-level="INFO"><span class="lv-lvl-dot lv-lvl-dot-info"></span>INFO</button>
+                        <button class="lv-lvl-btn active" data-level="WARN"><span class="lv-lvl-dot lv-lvl-dot-warn"></span>WARN</button>
+                        <button class="lv-lvl-btn active" data-level="ERROR"><span class="lv-lvl-dot lv-lvl-dot-error"></span>ERROR</button>
+                        <button class="lv-lvl-btn active" data-level="FATAL"><span class="lv-lvl-dot lv-lvl-dot-fatal"></span>FATAL</button>
+                    </div>
+
+                    <div class="lv-thread-wrap">
+                        <button id="lvThreadBtn" class="lv-thread-btn">
+                            <span id="lvThreadBtnLabel">Все threads</span>
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </button>
+                        <div id="lvThreadPopup" class="lv-thread-popup" style="display:none">
+                            <div class="lv-thread-popup-search">
+                                <input type="text" id="lvThreadSearch" placeholder="Найти thread..." autocomplete="off">
+                            </div>
+                            <div class="lv-thread-popup-actions">
+                                <button id="lvThreadAll" class="lv-thread-action">Выбрать всё</button>
+                                <button id="lvThreadNone" class="lv-thread-action">Сбросить</button>
+                            </div>
+                            <div id="lvThreadList" class="lv-thread-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="lv-thread-wrap">
+                        <button id="lvUserBtn" class="lv-thread-btn">
+                            <span id="lvUserBtnLabel">Все users</span>
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </button>
+                        <div id="lvUserPopup" class="lv-thread-popup" style="display:none">
+                            <div class="lv-thread-popup-search">
+                                <input type="text" id="lvUserSearch" placeholder="Найти user..." autocomplete="off">
+                            </div>
+                            <div class="lv-thread-popup-actions">
+                                <button id="lvUserAll" class="lv-thread-action">Сбросить</button>
+                            </div>
+                            <div id="lvUserList" class="lv-thread-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="lv-time-range-wrap">
+                        <input type="text" id="lvTimeFrom" class="lv-time-input" placeholder="-" title="Время от (HH:MM:SS)" autocomplete="off">
+                        <span class="lv-time-sep">→</span>
+                        <input type="text" id="lvTimeTo" class="lv-time-input" placeholder="-" title="Время до (HH:MM:SS)" autocomplete="off">
+                    </div>
+
+                    <button id="lvBookmarksBtn" class="lv-thread-btn lv-bookmarks-btn" title="Закладки (B на строке)">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        <span id="lvBookmarksCount">0</span>
+                    </button>
+
+                    <label class="lv-group-toggle" title="Сгруппировать события в транзакции (от EXEC nsp... до [process]::exiting)">
+                        <input type="checkbox" id="lvGroupTx">
+                        <span class="lv-group-toggle-track"><span class="lv-group-toggle-thumb"></span></span>
+                        <span class="lv-group-toggle-label">Группировать транзакции</span>
+                    </label>
+
+                    <button id="lvFilterReset" class="lv-filter-reset" title="Сбросить все фильтры">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                        </svg>
+                    </button>
+
+                    <div class="lv-filter-stats">
+                        <span id="lvFilterCount">-</span>
+                    </div>
+                </div>
+
+                <div class="lv-empty" id="lvEmpty">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="8" y1="13" x2="16" y2="13"/>
+                        <line x1="8" y1="17" x2="16" y2="17"/>
+                    </svg>
+                    <h3>LogViewer для Forte/log4j</h3>
+                    <p>Выберите файл <code>.log4j</code>, <code>.log</code> или <code>.xml</code> - система распарсит события и покажет их в виде таблицы. Кликните по строке, чтобы увидеть детали и stack trace.</p>
+                </div>
+
+                <div class="lv-timeline-wrap" id="lvTimelineWrap" style="display:none">
+                    <div class="lv-timeline-row">
+                        <span class="lv-timeline-label">Все события</span>
+                        <canvas id="lvTimelineMain" class="lv-timeline-canvas"></canvas>
+                    </div>
+                    <div class="lv-timeline-row">
+                        <span class="lv-timeline-label lv-timeline-label-err">Ошибки + Warns</span>
+                        <canvas id="lvTimelineErr" class="lv-timeline-canvas lv-timeline-canvas-err"></canvas>
+                    </div>
+                    <div class="lv-timeline-overlay" id="lvTimelineOverlay" style="display:none"></div>
+                    <div class="lv-timeline-tooltip" id="lvTimelineTooltip" style="display:none"></div>
+                    <div class="lv-timeline-hint">Клик - переход к моменту · Тяни мышью - выбрать интервал</div>
+                </div>
+
+                <div id="lvBookmarksPopup" class="lv-thread-popup lv-bookmarks-popup" style="display:none">
+                    <div class="lv-thread-popup-actions">
+                        <span class="lv-bookmarks-title">Закладки</span>
+                        <button id="lvBookmarksClear" class="lv-thread-action">Очистить все</button>
+                    </div>
+                    <div id="lvBookmarksList" class="lv-thread-list lv-bookmarks-list"></div>
+                </div>
+
+                <div class="lv-table-wrap" id="lvTableWrap" style="display:none">
+                    <div class="lv-table-header-wrap" id="lvHeaderWrap">
+                        <div class="lv-table-header" id="lvTableHeader">
+                            <div class="lv-h lv-c-num">#<span class="lv-resizer" data-col="num"></span></div>
+                            <div class="lv-h lv-c-time">Время<span class="lv-resizer" data-col="time"></span></div>
+                            <div class="lv-h lv-c-level">Level<span class="lv-resizer" data-col="level"></span></div>
+                            <div class="lv-h lv-c-thread">Thread<span class="lv-resizer" data-col="thread"></span></div>
+                            <div class="lv-h lv-c-cat">Category<span class="lv-resizer" data-col="cat"></span></div>
+                            <div class="lv-h lv-c-msg">Message<span class="lv-resizer" data-col="msg"></span></div>
+                        </div>
+                    </div>
+                    <div class="lv-table-scroll" id="lvScroll">
+                        <div class="lv-sticky-tx-row" id="lvStickyHeader" style="display:none"></div>
+                        <div class="lv-spacer" id="lvSpacer">
+                            <div class="lv-rows" id="lvRows"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lv-detail" id="lvDetail" style="display:none">
+                    <div class="lv-detail-header">
+                        <div class="lv-detail-title">
+                            <span id="lvDetailNum">#-</span>
+                            <span id="lvDetailLevel" class="lv-badge"></span>
+                            <span id="lvDetailTime" class="lv-detail-time"></span>
+                        </div>
+                        <button id="lvDetailClose" class="lv-detail-close" title="Закрыть">✕</button>
+                    </div>
+                    <div class="lv-detail-meta">
+                        <div class="lv-detail-meta-row"><span class="lv-detail-meta-label">Thread:</span><span id="lvDetailThread"></span></div>
+                        <div class="lv-detail-meta-row"><span class="lv-detail-meta-label">Category:</span><span id="lvDetailCat" class="lv-detail-mono"></span></div>
+                        <div class="lv-detail-meta-row" id="lvDetailUserRow" style="display:none">
+                            <span class="lv-detail-meta-label">User:</span>
+                            <span id="lvDetailUser" class="lv-detail-mono"></span>
+                            <button id="lvDetailUserOnly" class="lv-detail-action" title="Показать только события этого юзера">только этот →</button>
+                        </div>
+                    </div>
+                    <div class="lv-detail-section" id="lvDetailVSignWrap" style="display:none">
+                        <div class="lv-detail-label" id="lvDetailVSignLabel">⚠ V-Sign проверка</div>
+                        <div class="lv-vsign-grid" id="lvDetailVSign"></div>
+                    </div>
+                    <div class="lv-detail-section" id="lvDetailExecWrap" style="display:none">
+                        <div class="lv-detail-label">EXEC аргументы (что клиент прислал на сервер)</div>
+                        <div class="lv-exec-grid" id="lvDetailExec"></div>
+                    </div>
+                    <div class="lv-detail-section" id="lvDetailResultWrap" style="display:none">
+                        <div class="lv-detail-label lv-detail-label-result">↩ pResult (что сервер вернул клиенту)</div>
+                        <div class="lv-exec-grid lv-result-grid" id="lvDetailResult"></div>
+                    </div>
+                    <div class="lv-detail-section">
+                        <div class="lv-detail-label">Message</div>
+                        <pre class="lv-detail-content" id="lvDetailMessage"></pre>
+                    </div>
+                    <div class="lv-detail-section" id="lvDetailThrowableWrap" style="display:none">
+                        <div class="lv-detail-label">Throwable / Stack trace</div>
+                        <pre class="lv-detail-content lv-detail-trace" id="lvDetailThrowable"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mail Container (hidden by default) -->
+            <div id="mailContainer" style="display: none;">
+                <div class="card wide-card">
+                    <div class="card-header">
+                        <h3>Inbox</h3>
+                    </div>
+                    <ul class="mail-list" id="mailList">
+                        <li class="loading-placeholder">Loading mail...</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ── Script Edit/Add Modal ── -->
+<div id="scriptModal" class="ltm-modal-overlay" style="display:none">
+    <div class="ltm-modal">
+        <h3 class="ltm-modal-title" id="scriptModalTitle">Добавить скрипт</h3>
+        <div class="ltm-modal-body">
+            <div class="ltm-modal-row">
+                <div class="settings-field" style="flex:0 0 180px;">
+                    <label class="settings-field-label">Клиент</label>
+                    <input id="scriptModalClient" class="settings-input" list="scriptClientsList" placeholder="DEPO, ТСП, Верный…">
+                    <datalist id="scriptClientsList">
+                        <option value="DEPO">
+                        <option value="ТСП">
+                        <option value="Верный">
+                    </datalist>
+                </div>
+                <div class="settings-field" style="flex:1;">
+                    <label class="settings-field-label">Название</label>
+                    <input id="scriptModalName" class="settings-input" placeholder="Краткое название скрипта">
+                </div>
+            </div>
+            <div class="settings-field">
+                <label class="settings-field-label">Описание <span style="color:var(--text-muted);font-weight:400;">(необязательно)</span></label>
+                <textarea id="scriptModalDesc" class="settings-textarea" rows="2" placeholder="Краткое описание, для чего скрипт…"></textarea>
+            </div>
+            <div class="settings-field">
+                <label class="settings-field-label">SQL скрипт</label>
+                <textarea id="scriptModalContent" class="settings-textarea ltm-modal-textarea" rows="10" placeholder="SELECT ..."></textarea>
+            </div>
+        </div>
+        <div class="ltm-modal-footer">
+            <button id="scriptModalSave" class="btn-save">Сохранить</button>
+            <button id="scriptModalCancel" class="btn-modal-cancel">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Import Modal ── -->
+<div id="importModal" class="ltm-modal-overlay" style="display:none">
+    <div class="ltm-modal">
+        <h3 class="ltm-modal-title">Импорт скриптов (JSON)</h3>
+        <div class="ltm-modal-body">
+            <p class="settings-hint" style="margin-bottom:10px;">Вставьте JSON массив. Поля: <code>client</code>, <code>name</code>, <code>script</code></p>
+            <textarea id="importModalText" class="settings-textarea ltm-modal-textarea" rows="14"
+                placeholder='[&#10;  {"client":"DEPO","name":"Проверка статусов","script":"SELECT ..."},&#10;  {"client":"ТСП","name":"...","script":"..."}&#10;]'></textarea>
+        </div>
+        <div class="ltm-modal-footer">
+            <button id="importModalConfirm" class="btn-save">Импортировать</button>
+            <button id="importModalCancel" class="btn-modal-cancel">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Script View Modal ── -->
+<div id="scriptViewModal" class="ltm-modal-overlay" style="display:none">
+    <div class="ltm-modal ltm-modal--view">
+        <div class="ltm-view-titlebar">
+            <div class="ltm-view-header">
+                <span id="scriptViewClient" class="script-client-badge"></span>
+                <span id="scriptViewName" class="ltm-view-name"></span>
+            </div>
+            <button id="scriptViewClose" class="ltm-modal-close-btn" title="Закрыть">✕</button>
+        </div>
+        <div class="ltm-modal-body">
+            <div class="settings-field" style="flex-shrink:0;">
+                <label class="settings-field-label">Описание</label>
+                <textarea id="scriptViewDesc" class="settings-textarea" rows="2" style="resize:none;" placeholder="Описание не добавлено. Нажмите, чтобы добавить…"></textarea>
+            </div>
+            <div class="sql-field-wrap">
+                <label class="settings-field-label">SQL</label>
+                <div class="sql-editor-wrap">
+                    <pre id="scriptViewHighlight" class="sql-highlight" aria-hidden="true"></pre>
+                    <textarea id="scriptViewEditor" class="sql-editor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="ltm-modal-footer">
+            <button id="scriptViewCopy" class="btn-save">📋 Копировать</button>
+            <button id="scriptViewSave" class="btn-save">💾 Сохранить</button>
+            <button id="scriptViewCancel" class="btn-modal-cancel">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<script src="lv-mappings.js"></script>
+<script src="dashboard.js"></script>
+</body>
+</html>

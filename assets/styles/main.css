@@ -1,0 +1,35 @@
+/* main.css - Базовые стили */
+/* Добавляем небольшую метку, чтобы понять, что расширение загрузилось */
+body::before {
+    content: "Pro Active";
+    position: fixed;
+    bottom: 5px;
+    right: 5px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 2px 5px;
+    font-size: 10px;
+    border-radius: 4px;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+/* === Базовая поддержка темной темы === */
+/* Когда на <html> есть класс .ltm-dark-mode */
+html.ltm-dark-mode body {
+    background-color: #1a1a1a !important;
+    color: #e0e0e0 !important;
+}
+
+html.ltm-dark-mode #wrapper {
+    background-color: #2d2d2d !important;
+}
+
+html.ltm-dark-mode #header {
+    background-color: #3b82f6 !important; /* Синий заголовок в темной теме */
+}
+
+/* Скрываем метку активности расширения */
+body::before {
+    display: none !important;
+}

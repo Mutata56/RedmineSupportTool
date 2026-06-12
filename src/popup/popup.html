@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><название> Settings</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="logo"><название> <span>Pro</span></div>
+        <div class="version">v2.2</div>
+    </header>
+
+    <button id="openCustomDashboard" class="btn-dashboard-main">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+    </button>
+
+    <div class="section">
+        <div class="control-group">
+            <label class="group-label">Interface Style</label>
+            <div class="style-selector">
+                <label class="radio-card">
+                    <input type="radio" name="uiStyle" value="legacy">
+                    <div class="card-content">
+                        <span class="card-title">Legacy</span>
+                    </div>
+                </label>
+                <label class="radio-card">
+                    <input type="radio" name="uiStyle" value="modern" checked>
+                    <div class="card-content">
+                        <span class="card-title">Modern</span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="control-group" id="themeControlGroup">
+            <label class="group-label">Color Scheme</label>
+            <div class="toggle-switch">
+                <input type="checkbox" id="themeToggle">
+                <label for="themeToggle" class="toggle-label">
+                    <span class="label-text light">Light</span>
+                    <span class="label-text dark">Dark</span>
+                </label>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="control-group">
+            <label class="group-label">
+                Sound Alert
+                <input type="checkbox" id="alarmEnabledToggle">
+            </label>
+        </div>
+    </div>
+
+    <div id="statusMessage" class="status hidden">Settings saved</div>
+
+    <footer>
+        <div class="button-grid">
+            <button id="openOldDashboard" class="btn-secondary" title="Open Redmine">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Redmine
+            </button>
+            <button id="openLamoda" class="btn-secondary" title="Open Lamoda project">
+                <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                Lamoda
+            </button>
+        </div>
+    </footer>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>

@@ -1,37 +1,79 @@
 {
   "manifest_version": 3,
-  "options_page": "options.html",
-  "name": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX – Смены",
-  "version": "1.0",
-  "description": "Фичи для XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  "permissions": ["storage", "scripting", "alarms", "tabs"],
-"host_permissions": ["XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"],
+  "name": "<название> Support Pro",
+  "version": "2.2.0",
+  "description": "Профессиональный инструмент для техподдержки <название> (Redmine & Mail)",
+  "author": "KKRLL56",
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "48": "assets/icons/icon-48.png"
+    }
+  },
+  "icons": {
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab",
+    "notifications",
+    "alarms",
+    "tabs",
+    "identity"
+  ],
+  "host_permissions": [
+    "<ссылка>",
+    "https://mail.yandex.ru/*",
+    "https://mail.360.yandex.ru/*",
+    "https://messenger.360.yandex.ru/*",
+    "https://messenger.yandex.ru/*",
+    "<корпоративный мессенджер>",
+    "https://www.googleapis.com/*"
+  ],
+  "oauth2": {
+    "client_id": "<client_id>",
+    "scopes": [
+      "https://www.googleapis.com/auth/gmail.modify"
+    ]
+  },
   "content_scripts": [
     {
-      "matches": ["XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"],
-      "js": ["shared.js", "sync.js"],
-      "css": ["copy.css"],
+      "matches": ["<ссылка>"],
+      "js": ["src/old_extension/shared.js", "src/shared/menu.js", "src/shared/modal.js", "src/old_extension/activity.js", "src/old_extension/sync.js", "src/content/issues-menu.js", "src/content/similar-issues.js"],
+      "css": ["assets/styles/main.css", "assets/styles/issues.css", "src/old_extension/styles.css", "src/shared/menu.css", "src/shared/modal.css", "assets/styles/similar-issues.css"],
       "run_at": "document_idle"
     },
     {
-      "matches": ["XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"],
-      "js": ["content.js"],
-      "css": ["styles.css","copy.css"]
+      "matches": ["https://messenger.360.yandex.ru/*", "https://messenger.yandex.ru/*"],
+      "js": ["src/content/messenger-checker.js"],
+      "run_at": "document_idle"
     },
-	{
-		"matches": ["XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"],
-		  "js": ["shared.js", "dashboardMonitor.js"],
-		  "run_at": "document_idle"
-	},
-	{
-  "matches": ["XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"],
-  "js": ["shared.js", "activity.js"],
-  "css": ["styles.css", "copy.css"],
-  "run_at": "document_idle"
-}
+    {
+      "matches": ["https://mail.360.yandex.ru/*", "https://mail.yandex.ru/*"],
+      "js": ["src/content/mail-checker.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["<корпоративный мессенджер>"],
+      "js": ["src/content/magnit-checker.js"],
+      "run_at": "document_idle"
+    }
   ],
-
-  "background": {
-    "service_worker": "background.js"
-  }
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/styles/modern.css",
+        "assets/styles/issues.css",
+        "assets/icons/*",
+        "src/dashboard/dashboard.html",
+        "assets/alarm.mp3"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

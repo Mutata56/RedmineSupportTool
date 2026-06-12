@@ -1,0 +1,326 @@
+/* ==========================================================================
+   Shared Menu Component
+   Reusable context menu + submenu for any extension page.
+
+   Depends on design tokens from styles.css (:root vars).
+   Fallback values are provided so the component works standalone.
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   Container
+   -------------------------------------------------------------------------- */
+
+.ltm-menu {
+  position: fixed;
+  z-index: var(--ltm-z-index-max, 9999);
+  min-width: 186px;
+  max-width: 268px;
+  padding: 4px;
+  background: var(--ltm-color-surface-light, #ffffff);
+  border: 1px solid var(--ltm-color-border-light, #e5e7eb);
+  border-radius: var(--ltm-border-radius-lg, 8px);
+  box-shadow: var(--ltm-shadow-md, 0 4px 16px rgba(0,0,0,.08));
+  font-family: var(--ltm-font-family-primary,
+    'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: var(--ltm-font-size-sm, 12px);
+  color: var(--ltm-color-on-surface-light, #111827);
+  user-select: none;
+  -webkit-user-select: none;
+
+  /* Visibility / animation */
+  opacity: 0;
+  transform: translateY(-5px) scale(0.98);
+  pointer-events: none;
+  transition:
+    opacity  var(--ltm-transition-fast, .1s ease),
+    transform var(--ltm-transition-fast, .1s ease);
+}
+
+.ltm-menu--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+
+/* --------------------------------------------------------------------------
+   Dark theme
+   -------------------------------------------------------------------------- */
+
+.ltm-menu--dark {
+  background: var(--ltm-color-surface-dark, #0f172a);
+  border-color: var(--ltm-color-border-dark, #1e293b);
+  box-shadow: var(--ltm-shadow-lg, 0 8px 24px rgba(0,0,0,.10));
+  color: var(--ltm-color-on-surface-dark, #f1f5f9);
+}
+
+
+/* --------------------------------------------------------------------------
+   Button item
+   -------------------------------------------------------------------------- */
+
+.ltm-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 30px;
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--ltm-border-radius-md, 6px);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: var(--ltm-font-weight-medium, 500);
+  color: inherit;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
+  transition:
+    background-color var(--ltm-transition-fast, .1s ease),
+    border-color     var(--ltm-transition-fast, .1s ease);
+}
+
+.ltm-menu__item:hover {
+  background: var(--ltm-color-button-hover-light, #f3f4f6);
+  border-color: var(--ltm-color-border-light, #e5e7eb);
+}
+
+.ltm-menu__item:active {
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.07);
+}
+
+.ltm-menu__item:focus-visible {
+  outline: 2px solid var(--ltm-color-primary, #2563eb);
+  outline-offset: 1px;
+}
+
+.ltm-menu__item:disabled {
+  opacity: .42;
+  cursor: not-allowed;
+}
+
+/* Dark */
+.ltm-menu--dark .ltm-menu__item:hover {
+  background: var(--ltm-color-button-hover-dark, #334155);
+  border-color: var(--ltm-color-border-dark, #1e293b);
+}
+
+/* Variants */
+.ltm-menu__item--primary {
+  background: var(--ltm-color-primary, #2563eb);
+  color: #fff;
+  border-color: var(--ltm-color-primary, #2563eb);
+}
+.ltm-menu__item--primary:hover {
+  background: var(--ltm-color-primary-hover, #1d4ed8);
+  border-color: var(--ltm-color-primary-hover, #1d4ed8);
+}
+
+.ltm-menu__item--danger {
+  background: var(--ltm-color-danger, #dc2626);
+  color: #fff;
+  border-color: var(--ltm-color-danger, #dc2626);
+}
+.ltm-menu__item--danger:hover {
+  background: var(--ltm-color-danger-hover, #b91c1c);
+  border-color: var(--ltm-color-danger-hover, #b91c1c);
+}
+
+.ltm-menu__item--success {
+  background: var(--ltm-color-success, #16a34a);
+  color: #fff;
+  border-color: var(--ltm-color-success, #16a34a);
+}
+.ltm-menu__item--success:hover {
+  background: var(--ltm-color-success-hover, #15803d);
+  border-color: var(--ltm-color-success-hover, #15803d);
+}
+
+/* Has-submenu arrow */
+.ltm-menu__item--has-sub::after {
+  content: '›';
+  margin-left: auto;
+  padding-left: 8px;
+  font-size: 16px;
+  line-height: 1;
+  opacity: .45;
+  transition: opacity var(--ltm-transition-fast, .1s ease);
+}
+.ltm-menu__item--has-sub:hover::after {
+  opacity: .75;
+}
+
+/* Parent button highlighted while its submenu is open */
+.ltm-menu__item--sub-open {
+  background: var(--ltm-color-button-hover-light, #f3f4f6);
+  border-color: var(--ltm-color-border-light, #e5e7eb);
+}
+.ltm-menu--dark .ltm-menu__item--sub-open {
+  background: var(--ltm-color-button-hover-dark, #334155);
+  border-color: var(--ltm-color-border-dark, #1e293b);
+}
+
+
+/* --------------------------------------------------------------------------
+   Separator
+   -------------------------------------------------------------------------- */
+
+.ltm-menu__separator {
+  height: 1px;
+  margin: 3px 8px;
+  background: var(--ltm-color-border-light, #e5e7eb);
+  border: none;
+}
+
+.ltm-menu--dark .ltm-menu__separator {
+  background: var(--ltm-color-border-dark, #1e293b);
+}
+
+
+/* --------------------------------------------------------------------------
+   Toggle row  (checkbox + label)
+   -------------------------------------------------------------------------- */
+
+.ltm-menu__toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  min-height: 30px;
+  border: 1px solid transparent;
+  border-radius: var(--ltm-border-radius-md, 6px);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: var(--ltm-font-weight-medium, 500);
+  color: inherit;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    background-color var(--ltm-transition-fast, .1s ease),
+    border-color     var(--ltm-transition-fast, .1s ease);
+}
+
+.ltm-menu__toggle-row:hover {
+  background: var(--ltm-color-button-hover-light, #f3f4f6);
+  border-color: var(--ltm-color-border-light, #e5e7eb);
+}
+
+.ltm-menu--dark .ltm-menu__toggle-row:hover {
+  background: var(--ltm-color-button-hover-dark, #334155);
+  border-color: var(--ltm-color-border-dark, #1e293b);
+}
+
+/* Custom checkbox */
+.ltm-menu__toggle-row input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--ltm-color-border-light, #e5e7eb);
+  border-radius: 3px;
+  background: var(--ltm-color-button-light, #f9fafb);
+  cursor: pointer;
+  position: relative;
+  transition:
+    background-color var(--ltm-transition-fast, .1s ease),
+    border-color     var(--ltm-transition-fast, .1s ease);
+}
+
+.ltm-menu__toggle-row input[type="checkbox"]:checked {
+  background: var(--ltm-color-primary, #2563eb);
+  border-color: var(--ltm-color-primary, #2563eb);
+}
+
+.ltm-menu__toggle-row input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 5px;
+  height: 8px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.ltm-menu--dark .ltm-menu__toggle-row input[type="checkbox"] {
+  border-color: var(--ltm-color-border-dark, #1e293b);
+  background: var(--ltm-color-button-dark, #1e293b);
+}
+
+.ltm-menu__toggle-row span {
+  flex: 1;
+  line-height: 1.4;
+}
+
+
+/* --------------------------------------------------------------------------
+   Section header (optional, for grouped menus)
+   -------------------------------------------------------------------------- */
+
+.ltm-menu__header {
+  padding: 4px 10px 2px;
+  font-size: var(--ltm-font-size-xs, 11px);
+  font-weight: var(--ltm-font-weight-semibold, 600);
+  color: var(--ltm-color-muted-light, #6b7280);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.ltm-menu--dark .ltm-menu__header {
+  color: var(--ltm-color-muted-dark, #94a3b8);
+}
+
+
+/* --------------------------------------------------------------------------
+   Accessibility
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .ltm-menu,
+  .ltm-menu__item,
+  .ltm-menu__toggle-row {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .ltm-menu {
+    border-width: 2px;
+  }
+  .ltm-menu__item {
+    border-width: 2px;
+    font-weight: var(--ltm-font-weight-semibold, 600);
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   Mobile
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .ltm-menu {
+    min-width: 160px;
+    max-width: 240px;
+  }
+
+  .ltm-menu__item {
+    min-height: 34px;
+    padding: 6px 12px;
+    font-size: var(--ltm-font-size-md, 13px);
+  }
+
+  .ltm-menu__toggle-row {
+    min-height: 34px;
+    padding: 6px 12px;
+    font-size: var(--ltm-font-size-md, 13px);
+  }
+}

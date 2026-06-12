@@ -1,0 +1,303 @@
+:root {
+    --primary: #2563eb;
+    --primary-light: #eff6ff;
+    --bg: #ffffff;
+    --bg-secondary: #f8fafc;
+    --text: #0f172a;
+    --text-secondary: #64748b;
+    --border: #e2e8f0;
+    --radius: 10px;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.dark-theme {
+    --primary: #60a5fa;
+    --primary-light: #1e293b;
+    --bg: #0f172a;
+    --bg-secondary: #1e293b;
+    --text: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --border: #1e293b;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    width: 320px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background var(--transition), color var(--transition);
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ── Header ── */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.3px;
+    color: var(--text);
+}
+
+.logo span { color: var(--primary); }
+
+.version {
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+/* ── Dashboard Button ── */
+.btn-dashboard-main {
+    background: var(--primary);
+    color: #fff;
+    padding: 12px 16px;
+    width: 100%;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: -0.2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all var(--transition);
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2);
+}
+
+.btn-dashboard-main:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.btn-dashboard-main:active { transform: scale(0.98); }
+
+.btn-dashboard-main svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* ── Section ── */
+.section {
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ── Control Group ── */
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.group-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* ── Radio Cards ── */
+.style-selector { display: flex; gap: 8px; }
+.radio-card { flex: 1; cursor: pointer; }
+.radio-card input { display: none; }
+
+.card-content {
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+    transition: all var(--transition);
+}
+
+.radio-card input:checked + .card-content {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    box-shadow: 0 0 0 1px var(--primary);
+}
+
+.card-title {
+    display: block;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: -0.2px;
+}
+
+/* ── Divider ── */
+.divider {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 4px 0;
+}
+
+/* ── Theme Toggle ── */
+.toggle-switch { position: relative; }
+.toggle-switch input { display: none; }
+
+.toggle-label {
+    display: flex;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    padding: 2px;
+    height: 36px;
+    transition: border-color var(--transition);
+}
+
+.toggle-label:hover { border-color: var(--primary); }
+
+.toggle-label::before {
+    content: '';
+    position: absolute;
+    width: calc(50% - 3px);
+    height: calc(100% - 4px);
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    left: 2px;
+    top: 2px;
+}
+
+#themeToggle:checked + .toggle-label::before {
+    transform: translateX(calc(100% + 2px));
+}
+
+.label-text {
+    flex: 1;
+    text-align: center;
+    z-index: 1;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 36px;
+    color: var(--text-secondary);
+    transition: color var(--transition);
+}
+
+/* ── Alarm Toggle ── */
+#alarmEnabledToggle {
+    width: 36px;
+    height: 20px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--border);
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background var(--transition);
+    border: none;
+    outline: none;
+    flex-shrink: 0;
+}
+
+#alarmEnabledToggle::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform var(--transition);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+#alarmEnabledToggle:checked {
+    background: var(--primary);
+}
+
+#alarmEnabledToggle:checked::before {
+    transform: translateX(16px);
+}
+
+/* ── Buttons ── */
+.button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: -0.1px;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-light);
+}
+
+.btn-secondary svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* ── Status ── */
+.status {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: #10b981;
+    margin-top: 4px;
+    opacity: 1;
+    transition: opacity 0.4s;
+}
+
+.status.hidden { opacity: 0; pointer-events: none; }

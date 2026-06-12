@@ -1,0 +1,535 @@
+/* ==========================================================================
+   PRO: Modern Theme (Final Clean Version)
+   ========================================================================== */
+
+/* === БАЗА И ШРИФТЫ === */
+:root {
+    --ltm-bg-body: #f3f4f6;
+    --ltm-bg-surface: #ffffff;
+    --ltm-text-main: #111827;
+    --ltm-border: #e5e7eb;
+}
+
+html.ltm-modern-ui body,
+html.ltm-modern-ui input,
+html.ltm-modern-ui select,
+html.ltm-modern-ui textarea,
+html.ltm-modern-ui button {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+/* ==========================================================================
+   DARK MODE (Применяется только при классе .ltm-dark-mode)
+   ========================================================================== */
+
+html.ltm-modern-ui.ltm-dark-mode {
+    /* Палитра Zinc (Graphite) */
+    --ltm-bg-body: #18181b;       /* Zinc-950 */
+    --ltm-bg-surface: #27272a;    /* Zinc-800 */
+    --ltm-bg-input: #18181b;      /* Input fields */
+    --ltm-bg-hover: #3f3f46;      /* Zinc-700 */
+    --ltm-border: #3f3f46;        /* Borders */
+
+    --ltm-text-main: #e4e4e7;     /* Zinc-200 */
+    --ltm-text-muted: #a1a1aa;    /* Zinc-400 */
+
+    --ltm-accent: #3b82f6;        /* Blue-500 */
+    --ltm-header-bg: #09090b;     /* Top header */
+}
+
+/* === 1. ГЛОБАЛЬНЫЕ БЛОКИ === */
+html.ltm-dark-mode body,
+html.ltm-dark-mode #wrapper,
+html.ltm-dark-mode #wrapper2,
+html.ltm-dark-mode #wrapper3,
+html.ltm-dark-mode #main,
+html.ltm-dark-mode #content {
+    background-color: var(--ltm-bg-body) !important;
+    color: var(--ltm-text-main) !important;
+}
+
+/* === 2. ШАПКА, МЕНЮ, САЙДБАР === */
+html.ltm-dark-mode #top-menu {
+    background: var(--ltm-header-bg) !important;
+    border-bottom: 1px solid var(--ltm-border);
+}
+
+html.ltm-dark-mode #header {
+    background-color: var(--ltm-bg-surface) !important;
+    color: var(--ltm-text-main) !important;
+    border-bottom: 1px solid var(--ltm-border);
+}
+
+html.ltm-dark-mode #sidebar {
+    background-color: var(--ltm-bg-body) !important;
+    border-left: 1px solid var(--ltm-border) !important;
+}
+
+html.ltm-dark-mode #sidebar h3,
+html.ltm-dark-mode h1,
+html.ltm-dark-mode h2,
+html.ltm-dark-mode h3,
+html.ltm-dark-mode legend {
+    color: var(--ltm-text-main) !important;
+}
+
+#ltm_subject_select {
+padding: 3px;
+}
+
+/* Вкладки (Tabs) */
+html.ltm-dark-mode #main-menu li a {
+    background: transparent !important;
+    color: var(--ltm-text-muted) !important;
+    border: none !important;
+}
+html.ltm-dark-mode #main-menu li a:hover,
+html.ltm-dark-mode #main-menu li a.selected {
+    background: var(--ltm-bg-body) !important;
+    color: var(--ltm-text-main) !important;
+    border-top: 3px solid var(--ltm-accent) !important;
+    border-left: 1px solid var(--ltm-border) !important;
+    border-right: 1px solid var(--ltm-border) !important;
+    border-radius: 4px 4px 0 0;
+}
+
+/* === 3. ТАБЛИЦЫ === */
+html.ltm-dark-mode table.list {
+    border: 1px solid var(--ltm-border) !important;
+}
+html.ltm-dark-mode table.list th {
+    background-color: var(--ltm-bg-surface) !important;
+    color: var(--ltm-text-muted) !important;
+    border-bottom: 1px solid var(--ltm-border) !important;
+}
+html.ltm-dark-mode table.list td {
+    border-color: var(--ltm-border) !important;
+    color: var(--ltm-text-main) !important;
+}
+/* Зебра и ховер */
+html.ltm-dark-mode table.list tbody tr.odd td { background-color: var(--ltm-bg-body) !important; }
+html.ltm-dark-mode table.list tbody tr.even td { background-color: #1f1f23 !important; }
+html.ltm-dark-mode table.list tbody tr:hover td { background-color: var(--ltm-bg-hover) !important; }
+
+/* Группировка строк */
+html.ltm-dark-mode tr.group td {
+    background-color: var(--ltm-bg-surface) !important;
+    border-bottom: 1px solid var(--ltm-border) !important;
+    color: var(--ltm-text-main) !important;
+    font-weight: bold;
+}
+html.ltm-dark-mode tr.group a {
+    color: var(--ltm-text-main) !important;
+}
+
+/* === 4. ФОРМЫ (.box и другие контейнеры) === */
+/* Основной фикс для белой коробки создания задачи */
+html.ltm-dark-mode .box,
+html.ltm-dark-mode fieldset#filters,
+html.ltm-dark-mode fieldset#options {
+    background-color: var(--ltm-bg-surface) !important;
+    border: 1px solid var(--ltm-border) !important;
+    color: var(--ltm-text-main) !important;
+    border-radius: 6px;
+    padding: 16px;
+}
+
+/* Убираем фон у внутренних разделителей */
+html.ltm-dark-mode .splitcontentleft,
+html.ltm-dark-mode .splitcontentright,
+html.ltm-dark-mode fieldset.collapsible {
+    background: transparent !important;
+    border-color: var(--ltm-border) !important;
+}
+
+/* Инпуты */
+html.ltm-dark-mode input[type="text"],
+html.ltm-dark-mode input[type="password"],
+html.ltm-dark-mode input[type="date"],
+html.ltm-dark-mode textarea,
+html.ltm-dark-mode select {
+    background-color: var(--ltm-bg-input) !important;
+    color: var(--ltm-text-main) !important;
+    border: 1px solid var(--ltm-border) !important;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+
+
+
+/* Чеклисты */
+html.ltm-dark-mode .checklist-item {
+    background-color: transparent !important;
+    border-color: var(--ltm-border) !important;
+}
+
+/* === 5. КНОПКИ И ССЫЛКИ === */
+html.ltm-dark-mode a,
+html.ltm-dark-mode a:link,
+html.ltm-dark-mode a:visited {
+    color: #60a5fa !important;
+}
+html.ltm-dark-mode a.user.active {
+    color: var(--ltm-text-main) !important;
+    font-weight: 500;
+}
+
+/* Кнопки */
+html.ltm-dark-mode input[type="submit"],
+html.ltm-dark-mode input[type="button"],
+html.ltm-dark-mode button,
+html.ltm-dark-mode .contextual a {
+    background-color: var(--ltm-bg-surface) !important;
+    color: var(--ltm-text-main) !important;
+    border: 1px solid var(--ltm-border) !important;
+    border-radius: 4px;
+    background-image: none !important;
+    cursor: pointer;
+}
+html.ltm-dark-mode input[type="submit"]:hover,
+html.ltm-dark-mode .contextual a:hover {
+    background-color: var(--ltm-bg-hover) !important;
+}
+
+/* === 6. СПЕЦИАЛЬНЫЕ ЭЛЕМЕНТЫ === */
+
+
+/* Наш кастомный флажок не инвертируем */
+html.ltm-dark-mode .ltm-stale-flag {
+    filter: none !important;
+}
+
+/* ПРИОРИТЕТЫ (Критичный - Красный) */
+html.ltm-dark-mode tr.priority-4 td {
+    background-color: rgba(239, 68, 68, 0.15) !important;
+}
+html.ltm-dark-mode tr.priority-4 td.priority,
+html.ltm-dark-mode tr.priority-4 td.subject a {
+    color: #f87171 !important; /* Ярко-красный */
+    font-weight: 800;
+}
+
+/* СТАТУСЫ */
+html.ltm-dark-mode tr.status-1 td.status { color: #60a5fa !important; font-weight: bold; } /* Новая */
+html.ltm-dark-mode tr.status-2 td.status { color: #facc15 !important; font-weight: bold; } /* В работе */
+html.ltm-dark-mode tr.status-3 td.status { color: #4ade80 !important; }                    /* Решена */
+html.ltm-dark-mode tr.status-4 td.status { color: #fb923c !important; }                    /* Ожидание */
+
+/* ФЛАЖОК ПРОТУХШЕЙ ЗАДАЧИ */
+.ltm-stale-flag {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 14px;
+    cursor: help;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+/* Цвет текста даты */
+html.ltm-dark-mode span.ltm-stale-date {
+    color: #fbbf24;
+    font-weight: bold;
+}
+
+/* ВЫПАДАЮЩИЕ СПИСКИ */
+html.ltm-dark-mode .drdn-content {
+    background-color: var(--ltm-bg-surface) !important;
+    border: 1px solid var(--ltm-border) !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3) !important;
+}
+html.ltm-dark-mode .drdn-items a {
+    color: var(--ltm-text-main) !important;
+}
+html.ltm-dark-mode .drdn-items a:hover {
+    background-color: var(--ltm-bg-hover) !important;
+}
+
+/* ФУТЕР */
+html.ltm-dark-mode #footer {
+    background-color: var(--ltm-bg-body) !important;
+    border-top: 1px solid var(--ltm-border) !important;
+    color: var(--ltm-text-muted) !important;
+}
+
+html.ltm-dark-mode #query_form_with_buttons {
+    background-color: var(--ltm-bg-surface) !important;
+    border: 1px solid var(--ltm-border);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.icon {
+    padding: 5px !important;
+}
+
+html.ltm-dark-mode .drdn-trigger {
+    color: white !important;
+    background-color: #2e2e33 !important;
+}
+html.ltm-dark-mode #project-jump .drdn-items>* {
+    color: white !important;
+    background-color: #2e2e33 !important;
+}
+
+html.ltm-dark-mode .tab-edit {
+    background-color: #27272a  !important;
+}
+
+html.ltm-dark-mode .tab-preview {
+background-color: #27272a !important;
+}
+
+
+
+/* === АВТОМАТИЗАЦИЯ "НОВОЙ ЗАДАЧИ" === */
+
+/* Контейнер выбора темы */
+.ltm-subject-wrapper {
+    margin-bottom: 5px;
+}
+
+/* Наш кастомный селект */
+select.ltm-custom-select {
+    font-weight: 600;
+    color: var(--ltm-accent, #2563eb);
+    border: 2px solid var(--ltm-border);
+    padding: 8px;
+    border-radius: 6px;
+    background-color: var(--ltm-bg-input, #fff);
+    cursor: pointer;
+    min-width: 300px;
+}
+
+/* Если выбрана темная тема */
+html.ltm-dark-mode select.ltm-custom-select {
+    background-color: var(--ltm-bg-surface);
+    color: var(--ltm-text-main);
+    border-color: var(--ltm-accent);
+}
+
+
+html.ltm-dark-mode select.ltm-custom-select {
+    color: #60a5fa;
+    border-color: var(--ltm-accent);
+}
+
+/* === SUPER PROJECT SEARCH (Умный поиск проекта) === */
+
+.ltm-search-select-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    /* ГЛАВНОЕ ИСПРАВЛЕНИЕ: */
+    z-index: 999; /* Поднимаем весь блок поиска над остальными полями */
+    display: inline-block; /* Чтобы не ломать верстку внутри <p> */
+}
+
+/* Инпут поиска */
+input.ltm-search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--ltm-border);
+    border-radius: 6px;
+    background-color: var(--ltm-bg-input);
+    color: var(--ltm-text-main);
+    font-weight: 500;
+    font-size: 14px;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    transition: all 0.2s;
+    box-sizing: border-box; /* Важно для отступов */
+}
+
+input.ltm-search-input:focus {
+    border-color: var(--ltm-accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Выпадающий список результатов */
+.ltm-search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: var(--ltm-bg-surface);
+    border: 1px solid var(--ltm-border);
+    border-radius: 6px;
+    /* Усиленная тень, чтобы визуально отделить от фона */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.ltm-search-dropdown.hidden {
+    display: none;
+}
+
+/* Элемент списка */
+.ltm-search-option {
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ltm-text-main);
+    border-bottom: 1px solid var(--ltm-border); /* Разделители */
+}
+
+/* Убираем рамку у последнего элемента */
+.ltm-search-option:last-child {
+    border-bottom: none;
+}
+
+.ltm-search-option:hover {
+    background-color: var(--ltm-bg-hover);
+}
+
+/* Выбранный элемент */
+.ltm-search-option.selected {
+    background-color: rgba(59, 130, 246, 0.15); /* Чуть ярче выделение */
+    color: var(--ltm-accent);
+    font-weight: 700;
+    border-left: 3px solid var(--ltm-accent); /* Полоска слева */
+}
+
+.ltm-search-option.no-results {
+    color: var(--ltm-text-muted);
+    text-align: center;
+    padding: 12px;
+    cursor: default;
+}
+
+/* Скроллбар */
+.ltm-search-dropdown::-webkit-scrollbar { width: 8px; }
+.ltm-search-dropdown::-webkit-scrollbar-track { background: transparent; }
+.ltm-search-dropdown::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 4px;
+}
+html.ltm-dark-mode .ltm-search-dropdown::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
+}
+html>body .tabular p {
+overflow: visible !important;
+}
+
+html.ltm-dark-mode .issue {
+    background: #2e2e33 !important;
+}
+
+html.ltm-dark-mode .select2-selection {
+    background: #2e2e33 !important;
+    border:none;
+}
+
+/* Контейнер поля ввода (tags) */
+html.ltm-modern-ui .select2-container--default .select2-selection--multiple {
+    background-color: var(--ltm-bg-surface);
+    border: 1px solid var(--ltm-border);
+    border-radius: 6px;
+    min-height: 36px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/* Фокус на поле */
+html.ltm-modern-ui .select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: #3b82f6; /* Акцентный синий */
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+/* Сами теги (Chips) внутри поля */
+html.ltm-modern-ui .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    color: var(--ltm-text-main);
+    padding: 2px 6px;
+    margin-top: 6px;
+    font-size: 12px;
+}
+
+/* Крестик удаления тега */
+html.ltm-modern-ui .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: #9ca3af;
+    margin-right: 5px;
+    font-weight: bold;
+}
+html.ltm-modern-ui .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: #ef4444; /* Красный при наведении */
+}
+
+/* Одиночный выбор (если где-то используется select2 single) */
+html.ltm-modern-ui .select2-container--default .select2-selection--single {
+    background-color: var(--ltm-bg-surface);
+    border: 1px solid var(--ltm-border);
+    border-radius: 6px;
+    height: 36px;
+}
+html.ltm-modern-ui .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--ltm-text-main);
+    line-height: 34px;
+}
+html.ltm-modern-ui .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 34px;
+}
+
+/* === DARK MODE OVERRIDES (ТЕМНАЯ ТЕМА) === */
+
+/* Контейнер */
+html.ltm-modern-ui.ltm-dark-mode .select2-container--default .select2-selection--multiple,
+html.ltm-modern-ui.ltm-dark-mode .select2-container--default .select2-selection--single {
+    background-color: var(--ltm-bg-input) !important;
+    border-color: var(--ltm-border) !important;
+}
+
+/* Текст внутри */
+html.ltm-modern-ui.ltm-dark-mode .select2-container--default .select2-search--inline .select2-search__field {
+    color: var(--ltm-text-main) !important;
+    font-family: inherit;
+}
+
+/* Теги (Chips) */
+html.ltm-modern-ui.ltm-dark-mode .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: var(--ltm-bg-surface) !important;
+    border-color: var(--ltm-border) !important;
+    color: var(--ltm-text-main) !important;
+}
+
+/* Выпадающий список (Dropdown) */
+html.ltm-modern-ui.ltm-dark-mode .select2-dropdown {
+    background-color: var(--ltm-bg-surface) !important;
+    border-color: var(--ltm-border) !important;
+    color: var(--ltm-text-main) !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+/* Поле поиска внутри выпадающего списка */
+html.ltm-modern-ui.ltm-dark-mode .select2-search__field {
+    background-color: var(--ltm-bg-input) !important;
+    border-color: var(--ltm-border) !important;
+    color: var(--ltm-text-main) !important;
+}
+
+/* Элементы списка */
+html.ltm-modern-ui.ltm-dark-mode .select2-results__option {
+    color: var(--ltm-text-main) !important;
+}
+
+/* Элемент списка при наведении/выборе */
+html.ltm-modern-ui.ltm-dark-mode .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--ltm-accent) !important; /* Синий */
+    color: #ffffff !important;
+}
+
+/* Выбранный элемент в списке */
+html.ltm-modern-ui.ltm-dark-mode .select2-results__option[aria-selected="true"] {
+    background-color: var(--ltm-bg-hover) !important;
+}

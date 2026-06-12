@@ -1,0 +1,391 @@
+/* assets/styles/issues.css */
+
+/* 0. Кнопка копирования SQL (sql-copy-btn) из shared.js - позиционируем в правый верхний угол */
+pre {
+    position: relative !important;
+}
+
+.sql-copy-btn {
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(63, 63, 70, 0.6) !important;
+    border: 1px solid rgba(228, 228, 231, 0.1) !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    z-index: 10 !important;
+    transition: all 0.2s !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    float: none !important;
+}
+
+.sql-copy-btn:hover {
+    background: rgba(59, 130, 246, 0.5) !important;
+    border-color: #3b82f6 !important;
+}
+
+/* 1. Плавающая панель действий (Редактировать / Трудозатраты / …) */
+.controller-issues.action-show #content > .contextual {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1001;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+
+    padding: 5px 6px;
+    border-radius: 10px;
+
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10), 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Ссылки внутри панели */
+.controller-issues.action-show #content > .contextual a {
+    margin: 0 !important;
+    padding: 5px 12px !important;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: #374151 !important;
+    text-decoration: none !important;
+    white-space: nowrap;
+    transition: background 0.12s ease, color 0.12s ease;
+    /* Убираем иконки (background-image спрайт Redmine) */
+    background-image: none !important;
+    padding-left: 12px !important;
+}
+
+.controller-issues.action-show #content > .contextual a:hover {
+    background: #eff6ff;
+    color: #2563eb !important;
+}
+
+/* Тонкий разделитель между ссылками */
+.controller-issues.action-show #content > .contextual a + a {
+    border-left: 1px solid #e5e7eb;
+    border-radius: 0 6px 6px 0;
+    margin-left: 2px !important;
+}
+
+/* 2. Исправление фона для кода и контейнера */
+html.ltm-dark-mode pre,
+html.ltm-dark-mode pre code.syntaxhl,
+html.ltm-dark-mode .collapsed-text pre {
+    background-color: #1e1e20 !important; /* Насыщенный темный фон */
+    color: #e4e4e7 !important;
+    border: 1px solid #3f3f46 !important;
+    padding: 16px !important;
+    border-radius: 8px !important;
+    display: block;
+    overflow-x: auto;
+}
+
+/* 3. Кнопка копирования кода - враппер вокруг pre даёт надёжный position context */
+.ltm-code-wrapper {
+    position: relative !important;
+    display: block !important;
+}
+
+.ltm-copy-btn {
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(63, 63, 70, 0.6) !important;
+    border: 1px solid rgba(228, 228, 231, 0.1) !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    z-index: 10 !important;
+    transition: all 0.2s !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    float: none !important;
+    transform: none !important;
+}
+
+.ltm-copy-btn:hover {
+    background: rgba(59, 130, 246, 0.5);
+    border-color: #3b82f6;
+}
+
+/* 4. Красивые стили подсветки SQL в темной теме */
+html.ltm-dark-mode .syntaxhl .k { color: #f472b6 !important; font-weight: bold; } /* Keywords (SELECT, FROM) */
+html.ltm-dark-mode .syntaxhl .o { color: #94a3b8 !important; }                    /* Operators */
+html.ltm-dark-mode .syntaxhl .n { color: #e4e4e7 !important; }                    /* Names */
+html.ltm-dark-mode .syntaxhl .s1 { color: #34d399 !important; }                   /* Strings */
+html.ltm-dark-mode .syntaxhl .k + .o,
+html.ltm-dark-mode .syntaxhl .o + .n { color: #60a5fa !important; }               /* Специфические сочетания */
+html.ltm-dark-mode .syntaxhl .s1 {background: none;}
+
+/* Кнопка "Цитировать" в комментариях */
+.journal .contextual a.icon-comment {
+    background-color: #f3f4f6 !important;
+    background-image: none !important;
+    border: 1px solid #d1d5db !important;
+    color: #374151 !important;
+    padding: 3px 10px !important;
+    border-radius: 6px !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+    /* Убираем скрытие текста у icon-only */
+    width: auto !important;
+    height: auto !important;
+    text-indent: 0 !important;
+    overflow: visible !important;
+}
+
+.journal .contextual a.icon-comment:hover {
+    background-color: #eff6ff !important;
+    border-color: #93c5fd !important;
+    color: #2563eb !important;
+}
+
+.note-header {
+padding-bottom: 10px;
+}
+
+/* 1. Настройка панели инструментов редактора */
+html.ltm-dark-mode .jstElements {
+    background-color: #27272a !important; /* Темный фон панели */
+    border: 1px solid #3f3f46 !important;
+    border-radius: 6px 6px 0 0;
+    padding: 6px !important;
+    height: auto !important;
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+/* Скрываем все кнопки по умолчанию и разделители */
+html.ltm-dark-mode .jstElements button,
+html.ltm-dark-mode .jstSpacer {
+    display: none !important;
+}
+
+/* Показываем только нужные кнопки */
+html.ltm-dark-mode button.jstb_strong, /* Жирный */
+html.ltm-dark-mode button.jstb_em,     /* Курсив */
+html.ltm-dark-mode button.jstb_ins,    /* Подчеркнутый */
+html.ltm-dark-mode button.jstb_precode /* Код */ {
+    display: flex !important;
+    background: #3f3f46 !important;
+    border: 1px solid #52525b !important;
+    border-radius: 4px !important;
+    width: auto !important;
+    min-width: 32px;
+    height: 32px !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* Убираем стандартные иконки Redmine внутри этих кнопок */
+html.ltm-dark-mode button.jstb_strong span,
+html.ltm-dark-mode button.jstb_em span,
+html.ltm-dark-mode button.jstb_ins span,
+html.ltm-dark-mode button.jstb_precode span {
+    display: none !important;
+}
+
+/* Добавляем ваш текст вместо иконок */
+html.ltm-dark-mode button.jstb_strong::before { content: "Ж"; color: white; font-weight: bold; }
+html.ltm-dark-mode button.jstb_em::before     { content: "К"; color: white; font-style: italic; font-family: serif; }
+html.ltm-dark-mode button.jstb_ins::before    { content: "П"; color: white; text-decoration: underline; }
+html.ltm-dark-mode button.jstb_precode::before { content: "код"; color: #60a5fa; font-size: 11px; font-family: monospace; padding: 0 4px; }
+
+html.ltm-dark-mode .jstElements button:hover {
+    background-color: #3b82f6 !important;
+    border-color: #60a5fa !important;
+}
+
+html.ltm-dark-mode #content .jstTabs.tabs li:before {
+display: inline !important;
+}
+html.ltm-dark-mode .ui-menu-item {
+    color: white;
+    background: #27272a;
+}
+
+/* Возвращаем кнопки тулбара, которые могли скрыться */
+html.ltm-dark-mode .jstElements {
+    display: flex !important; /* Принудительно показываем панель */
+    flex-wrap: wrap;
+    gap: 4px;
+    background: #27272a !important;
+    border: 1px solid #3f3f46 !important;
+    padding: 6px !important;
+}
+
+/* Контейнер для сплит-режима */
+.ltm-split-container {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 10px;
+    width: 100%;
+    align-items: stretch;
+    margin-top: 5px;
+}
+
+/* Редактор слева */
+.ltm-split-container > .jstEditor {
+    flex: 1;
+    width: 50% !important;
+    margin: 0 !important;
+}
+
+/* Предпросмотр справа */
+.ltm-split-container > .wiki-preview {
+    flex: 1;
+    width: 50% !important;
+    display: block !important; /* Всегда отображать */
+    background: #1e1e20 !important; /* Темный фон под стать теме */
+    color: #e4e4e7 !important;
+    border: 1px solid #3f3f46 !important;
+    border-radius: 4px;
+    padding: 10px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    min-height: 200px;
+}
+
+
+/* Основной контейнер сплита */
+.ltm-split-container {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 15px !important;
+    width: 100% !important;
+    align-items: stretch !important;
+    margin-top: 5px;
+    box-sizing: border-box;
+}
+
+/* Левая часть: Поле ввода */
+.ltm-split-container textarea.wiki-edit {
+    flex: 0 0 50% !important; /* Строго 50%, не растет и не сжимается */
+    width: 50% !important;
+    max-width: 50% !important;
+    display: block !important;
+    box-sizing: border-box !important;
+    padding: 10px !important;
+    resize: vertical !important; /* Разрешаем менять высоту, но не ширину */
+}
+
+/* Правая часть: Предпросмотр */
+.ltm-split-container .wiki-preview {
+    flex: 0 0 50% !important; /* Строго 50% */
+    width: 50% !important;
+    max-width: 50% !important;
+    display: block !important;
+    background: #1e1e20 !important;
+    color: #e4e4e7 !important;
+    border: 1px solid #3f3f46 !important;
+    border-radius: 4px;
+    padding: 10px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+/* Убираем лишние отступы у jstEditor, так как он теперь только для кнопок */
+.jstEditor {
+    width: 100% !important;
+}
+
+/* Стиль для кастомной кнопки SQL в тулбаре */
+html.ltm-dark-mode button.ltm-sql-insert-btn {
+    display: flex !important;
+    background: #3f3f46 !important;
+    border: 1px solid #52525b !important;
+    border-radius: 4px !important;
+    color: #60a5fa !important; /* Голубой цвет для акцента на SQL */
+    font-size: 10px !important;
+    font-weight: bold !important;
+    padding: 0 6px !important;
+    height: 32px !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-left: 4px;
+}
+
+html.ltm-dark-mode button.ltm-sql-insert-btn:hover {
+    background-color: #3b82f6 !important;
+    color: white !important;
+    border-color: #60a5fa !important;
+}
+
+* Общие стили для кастомных кнопок SQL */
+html.ltm-dark-mode button.ltm-sql-insert-btn {
+    display: inline-flex !important;
+    background: #3f3f46 !important;
+    border: 1px solid #52525b !important;
+    border-radius: 4px !important;
+    color: #60a5fa !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    padding: 0 8px !important;
+    height: 32px !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-left: 4px;
+    transition: all 0.2s;
+
+}
+
+/* Отдельный цвет для простой кнопки, чтобы различать их */
+html.ltm-dark-mode button.ltm-sql-insert-btn.simple {
+    color: #a1a1aa !important; /* Серый цвет для обычной вставки */
+}
+
+html.ltm-dark-mode button.ltm-sql-insert-btn:hover {
+    background-color: #3b82f6 !important;
+    color: white !important;
+    border-color: #60a5fa !important;
+}
+
+/* Применяем темный фон ко всем блокам кода в темной теме, даже без подсветки */
+html.ltm-dark-mode pre,
+html.ltm-dark-mode pre code, /* Добавили просто code */
+html.ltm-dark-mode pre code.syntaxhl,
+html.ltm-dark-mode .collapsed-text pre {
+    background-color: #1e1e20 !important;
+    color: #e4e4e7 !important;
+    border: 1px solid #3f3f46 !important;
+    padding: 16px !important;
+    border-radius: 8px !important;
+    display: block;
+    overflow-x: auto;
+    font-family: monospace; /* Чтобы текст не плыл */
+}

@@ -1,0 +1,376 @@
+/* ==========================================================================
+   Shared Modal Component
+   Promise-based dialog for any extension page.
+
+   Depends on design tokens from styles.css (:root vars).
+   Fallback values are provided so the component works standalone.
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   Overlay / Backdrop
+   -------------------------------------------------------------------------- */
+
+.ltm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ltm-z-index-modal, 99998);
+  background: rgba(0, 0, 0, .42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  opacity: 0;
+  transition: opacity var(--ltm-transition-normal, .15s ease);
+  pointer-events: none;
+}
+
+.ltm-modal-overlay--visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+
+/* --------------------------------------------------------------------------
+   Card
+   -------------------------------------------------------------------------- */
+
+.ltm-modal {
+  min-width: 280px;
+  max-width: 380px;
+  width: 90vw;
+  padding: 20px 20px 16px;
+  background: var(--ltm-color-surface-light, #ffffff);
+  border: 1px solid var(--ltm-color-border-light, #e5e7eb);
+  border-radius: var(--ltm-border-radius-lg, 8px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .16);
+  font-family: var(--ltm-font-family-primary,
+    'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: var(--ltm-font-size-sm, 12px);
+  color: var(--ltm-color-on-surface-light, #111827);
+  user-select: none;
+  -webkit-user-select: none;
+
+  transform: scale(.96) translateY(-8px);
+  transition: transform var(--ltm-transition-normal, .15s ease);
+}
+
+.ltm-modal-overlay--visible .ltm-modal {
+  transform: scale(1) translateY(0);
+}
+
+
+/* --------------------------------------------------------------------------
+   Dark theme
+   -------------------------------------------------------------------------- */
+
+.ltm-modal--dark {
+  background: var(--ltm-color-surface-dark, #0f172a);
+  border-color: var(--ltm-color-border-dark, #1e293b);
+  color: var(--ltm-color-on-surface-dark, #f1f5f9);
+}
+
+
+/* --------------------------------------------------------------------------
+   Title
+   -------------------------------------------------------------------------- */
+
+.ltm-modal__title {
+  font-size: var(--ltm-font-size-md, 13px);
+  font-weight: var(--ltm-font-weight-semibold, 600);
+  line-height: 1.35;
+  margin-bottom: 16px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Field row
+   -------------------------------------------------------------------------- */
+
+.ltm-modal__field {
+  margin-bottom: 12px;
+}
+
+.ltm-modal__field:last-of-type {
+  margin-bottom: 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   Label
+   -------------------------------------------------------------------------- */
+
+.ltm-modal__label {
+  display: block;
+  font-size: var(--ltm-font-size-xs, 11px);
+  font-weight: var(--ltm-font-weight-semibold, 600);
+  color: var(--ltm-color-muted-light, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 5px;
+  cursor: default;
+}
+
+.ltm-modal--dark .ltm-modal__label {
+  color: var(--ltm-color-muted-dark, #94a3b8);
+}
+
+
+/* --------------------------------------------------------------------------
+   Input
+   -------------------------------------------------------------------------- */
+
+.ltm-modal__input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  background: var(--ltm-color-button-light, #f9fafb);
+  border: 1.5px solid var(--ltm-color-border-light, #e5e7eb);
+  border-radius: var(--ltm-border-radius-md, 6px);
+  font-family: inherit;
+  font-size: var(--ltm-font-size-md, 13px);
+  color: inherit;
+  outline: none;
+  transition:
+    border-color var(--ltm-transition-fast, .1s ease),
+    box-shadow   var(--ltm-transition-fast, .1s ease);
+}
+
+.ltm-modal__input:focus {
+  border-color: var(--ltm-color-primary, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+
+.ltm-modal--dark .ltm-modal__input {
+  background: var(--ltm-color-button-dark, #1e293b);
+  border-color: var(--ltm-color-border-dark, #334155);
+}
+
+.ltm-modal--dark .ltm-modal__input:focus {
+  border-color: var(--ltm-color-primary, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, .15);
+}
+
+/* Remove number spinners - we show our own hint */
+.ltm-modal__input[type="number"]::-webkit-inner-spin-button,
+.ltm-modal__input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.ltm-modal__input[type="number"] { -moz-appearance: textfield; }
+
+
+/* --------------------------------------------------------------------------
+   Hint
+   -------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------
+   Info block (read-only scrollable text)
+   -------------------------------------------------------------------------- */
+
+.ltm-modal__info {
+  overflow-y: auto;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+  background: var(--ltm-color-button-light, #f9fafb);
+  border: 1px solid var(--ltm-color-border-light, #e5e7eb);
+  border-radius: var(--ltm-border-radius-md, 6px);
+  font-size: var(--ltm-font-size-xs, 11px);
+  line-height: 1.5;
+  color: var(--ltm-color-muted-light, #6b7280);
+  white-space: pre-wrap;
+  word-break: break-word;
+  /* Разрешаем выделение и копирование текста */
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+.ltm-modal--dark .ltm-modal__info {
+  background: var(--ltm-color-button-dark, #1e293b);
+  border-color: var(--ltm-color-border-dark, #334155);
+  color: var(--ltm-color-muted-dark, #94a3b8);
+}
+
+
+/* --------------------------------------------------------------------------
+   Presets (quick-fill chips)
+   -------------------------------------------------------------------------- */
+
+.ltm-modal__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.ltm-modal__preset-btn {
+  padding: 3px 10px;
+  border: 1.5px solid var(--ltm-color-border-light, #e5e7eb);
+  border-radius: 999px;
+  background: var(--ltm-color-button-light, #f9fafb);
+  font-family: inherit;
+  font-size: var(--ltm-font-size-xs, 11px);
+  font-weight: var(--ltm-font-weight-medium, 500);
+  color: var(--ltm-color-on-surface-light, #374151);
+  cursor: pointer;
+  outline: none;
+  transition:
+    background-color var(--ltm-transition-fast, .1s ease),
+    border-color     var(--ltm-transition-fast, .1s ease),
+    color            var(--ltm-transition-fast, .1s ease);
+}
+
+.ltm-modal__preset-btn:hover {
+  background: var(--ltm-color-primary, #2563eb);
+  border-color: var(--ltm-color-primary, #2563eb);
+  color: #fff;
+}
+
+.ltm-modal__preset-btn:focus-visible {
+  outline: 2px solid var(--ltm-color-primary, #2563eb);
+  outline-offset: 2px;
+}
+
+.ltm-modal--dark .ltm-modal__preset-btn {
+  border-color: var(--ltm-color-border-dark, #334155);
+  background: var(--ltm-color-button-dark, #1e293b);
+  color: var(--ltm-color-on-surface-dark, #cbd5e1);
+}
+
+.ltm-modal--dark .ltm-modal__preset-btn:hover {
+  background: var(--ltm-color-primary, #3b82f6);
+  border-color: var(--ltm-color-primary, #3b82f6);
+  color: #fff;
+}
+
+
+/* --------------------------------------------------------------------------
+   Hint
+   -------------------------------------------------------------------------- */
+
+.ltm-modal__hint {
+  margin-top: 5px;
+  font-size: var(--ltm-font-size-xs, 11px);
+  color: var(--ltm-color-muted-light, #6b7280);
+  line-height: 1.4;
+}
+
+.ltm-modal--dark .ltm-modal__hint {
+  color: var(--ltm-color-muted-dark, #94a3b8);
+}
+
+
+/* --------------------------------------------------------------------------
+   Buttons row
+   -------------------------------------------------------------------------- */
+
+.ltm-modal__buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.ltm-modal__btn {
+  padding: 6px 16px;
+  border: 1.5px solid transparent;
+  border-radius: var(--ltm-border-radius-md, 6px);
+  font-family: inherit;
+  font-size: var(--ltm-font-size-sm, 12px);
+  font-weight: var(--ltm-font-weight-medium, 500);
+  cursor: pointer;
+  outline: none;
+  transition:
+    background-color var(--ltm-transition-fast, .1s ease),
+    border-color     var(--ltm-transition-fast, .1s ease);
+}
+
+.ltm-modal__btn:focus-visible {
+  outline: 2px solid var(--ltm-color-primary, #2563eb);
+  outline-offset: 2px;
+}
+
+/* Cancel */
+.ltm-modal__btn--cancel {
+  background: transparent;
+  border-color: var(--ltm-color-border-light, #e5e7eb);
+  color: var(--ltm-color-on-surface-light, #374151);
+}
+
+.ltm-modal__btn--cancel:hover {
+  background: var(--ltm-color-button-hover-light, #f3f4f6);
+}
+
+.ltm-modal--dark .ltm-modal__btn--cancel {
+  border-color: var(--ltm-color-border-dark, #334155);
+  color: var(--ltm-color-on-surface-dark, #cbd5e1);
+}
+
+.ltm-modal--dark .ltm-modal__btn--cancel:hover {
+  background: var(--ltm-color-button-hover-dark, #334155);
+}
+
+/* Confirm */
+.ltm-modal__btn--confirm {
+  background: var(--ltm-color-primary, #2563eb);
+  border-color: var(--ltm-color-primary, #2563eb);
+  color: #fff;
+}
+
+.ltm-modal__btn--confirm:hover {
+  background: var(--ltm-color-primary-hover, #1d4ed8);
+  border-color: var(--ltm-color-primary-hover, #1d4ed8);
+}
+
+
+/* --------------------------------------------------------------------------
+   Accessibility
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .ltm-modal-overlay,
+  .ltm-modal {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .ltm-modal {
+    border-width: 2px;
+  }
+  .ltm-modal__input {
+    border-width: 2px;
+  }
+  .ltm-modal__btn {
+    border-width: 2px;
+    font-weight: var(--ltm-font-weight-semibold, 600);
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   Mobile
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 480px) {
+  .ltm-modal {
+    min-width: unset;
+    max-width: unset;
+    width: calc(100vw - 32px);
+    padding: 16px;
+  }
+
+  .ltm-modal__buttons {
+    flex-direction: column-reverse;
+    gap: 6px;
+  }
+
+  .ltm-modal__btn {
+    width: 100%;
+    text-align: center;
+    padding: 9px 16px;
+  }
+}
