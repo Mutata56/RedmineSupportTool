@@ -1,0 +1,48 @@
+# Deployment configuration and every local variant stay private.
+config/*
+!config/*.example.json
+!config/*.example.yml
+!config/*.example.yaml
+!config/README.md
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.token
+
+# Customer data and runtime output.
+state/
+logs/
+outputs/
+attachments/
+backups/
+*.log
+*.log.*
+*.jsonl
+*.bak
+*.bak-*
+*.old
+*.tmp
+
+# Local tools, environments, and conversation history.
+.claude/
+.codex/
+.agents/
+CLAUDE_SESSIONS.md
+AGENTS.md
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.DS_Store
+
+# Local privacy review reports must never be committed.
+*private-audit*
+*private-values*
+*gitleaks-report*

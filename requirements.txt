@@ -1,0 +1,13 @@
+# Зависимости work_agent вне stdlib.
+# ВАЖНО: почтовая труба (orchestrator, mail_client, redmine_client, dedup, rules, llm)
+# работает на ЧИСТОМ stdlib - для неё ставить ничего не нужно.
+# Пакеты ниже нужны только для труб Grafana (рендер панелей) и БД:
+
+websocket-client   # agent/grafana_render.py - headless-рендер панелей Grafana по CDP
+PyYAML             # agent/grafana_sets.py   - чтение config/grafana_sets.yml
+Pillow             # agent/grafana_caption.py - плашка-подпись на снимке (опционально; без неё - снимок без подписи)
+
+# Системные пакеты (не pip), нужны для тех же труб:
+#   браузер для рендера:  apt install chromium   |  pacman -S chromium
+#   шрифты для подписи:   apt install fonts-dejavu | pacman -S ttf-dejavu
+#   БД-труба (выключена): tsql (FreeTDS) + stdbuf (coreutils)

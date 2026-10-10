@@ -1,0 +1,8 @@
+{
+  "shift_start": "09:00",
+  "handoff_window_minutes": 20,
+  "tz": "UTC+03:00",
+  "me": {"name": "Engineer One", "id": 1},
+  "roster": {"engineer_one": {"name": "Engineer One", "id": 1}, "engineer_two": {"name": "Engineer Two", "id": 2}},
+  "workdays": {}
+}

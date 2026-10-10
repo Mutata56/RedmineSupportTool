@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Agent Control Center — work_agent</title>
+<!-- всё локально (vendor/) — дашборд работает без интернета/CDN -->
+<link rel="stylesheet" href="/static/vendor/fonts.css">
+<script src="/static/vendor/tailwind.js"></script>
+<link rel="stylesheet" href="/static/css/app.css">
+<script src="/static/vendor/lucide.min.js"></script>
+<script src="/static/js/ws.js"></script>
+<script src="/static/js/app.js"></script>
+<script defer src="/static/vendor/alpine.min.js"></script>
+</head>
+<body x-data="dash()" class="min-h-screen">
+
+<!-- ── шапка ── -->
+<header class="sticky top-0 z-20 border-b backdrop-blur" style="border-color: var(--line); background: rgba(10,15,29,.86)">
+  <div class="max-w-[1500px] mx-auto px-6 h-14 flex items-center gap-5">
+    <div class="flex items-center gap-2.5 shrink-0">
+      <i data-lucide="bot" class="w-5 h-5 text-blue-500"></i>
+      <span class="font-semibold text-[15px] tracking-wide">AI Agent Control Center</span>
+      <span class="text-slate-500 text-xs hidden md:inline">work_agent</span>
+    </div>
+
+    <!-- компактный индикатор статуса агента -->
+    <div class="statepill" :class="heroState()">
+      <span :class="agentDotCls()"></span>
+      <span x-text="agentLabel()"></span>
+      <span class="text-[11px] font-medium opacity-70 tabular-nums" x-show="agent.state!=='stopped'"
+            x-text="uptimeText"></span>
+    </div>
+
+    <!-- ws-индикатор -->
+    <div class="ml-auto flex items-center gap-1.5 text-[11px]"
+         :class="wsOk ? 'text-green-500' : 'text-slate-500'">
+      <span class="status-dot" :class="wsOk ? 'active' : 'idle'"></span>
+      <span x-text="wsOk ? 'live' : 'переподключение…'"></span>
+    </div>
+  </div>
+
+  <!-- навигация -->
+  <div class="max-w-[1500px] mx-auto px-6 pb-2.5">
+    <nav class="inline-flex gap-0.5 bg-slate-800/50 border rounded-lg p-0.5" style="border-color: var(--line)">
+      <button class="navtab" :class="tab==='dashboard' && 'on'" @click="go('dashboard')">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>Центр управления</button>
+      <button class="navtab" :class="tab==='mails' && 'on'" @click="go('mails')">
+        <i data-lucide="mail" class="w-4 h-4"></i>Письма</button>
+      <button class="navtab" :class="tab==='tickets' && 'on'" @click="go('tickets')">
+        <i data-lucide="ticket" class="w-4 h-4"></i>Заявки</button>
+      <button class="navtab relative" :class="tab==='approvals' && 'on'" @click="go('approvals')">
+        <i data-lucide="shield-check" class="w-4 h-4"></i>Одобрения
+        <span x-show="pendingCount>0" x-cloak
+              class="ml-0.5 min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center rounded-full bg-red-600 text-white text-[10.5px] font-bold"
+              x-text="pendingCount"></span></button>
+      <button class="navtab" :class="tab==='chat' && 'on'" @click="go('chat')">
+        <i data-lucide="message-square" class="w-4 h-4"></i>Claude</button>
+      <button class="navtab" :class="tab==='logs' && 'on'" @click="go('logs')">
+        <i data-lucide="scroll-text" class="w-4 h-4"></i>Логи</button>
+    </nav>
+  </div>
+</header>
+
+<main class="max-w-[1500px] mx-auto px-6 py-5 pb-16">
+
+<!-- ═══════════ ЦЕНТР УПРАВЛЕНИЯ ═══════════ -->
+<section x-show="tab==='dashboard'">
+
+  <!-- HERO: что агент делает прямо сейчас -->
+  <div class="hero mb-4" :class="'st-' + heroState()">
+    <div class="flex flex-wrap items-center gap-3 mb-3">
+      <span class="statepill" :class="heroState()">
+        <span :class="agentDotCls()"></span><span x-text="agentLabel()"></span>
+      </span>
+      <span class="eyebrow">агент прямо сейчас</span>
+      <span x-show="!agent.dry_run" x-cloak class="statepill livewarn">⚠ БОЕВОЙ РЕЖИМ</span>
+      <span class="ml-auto flex items-center gap-4 text-[11.5px] text-slate-500">
+        <span x-show="agent.pid" class="tabular-nums">pid <span class="text-slate-300" x-text="agent.pid"></span></span>
+        <span x-show="agent.state!=='stopped'">uptime <span class="text-slate-300 tabular-nums" x-text="uptimeText"></span></span>
+      </span>
+    </div>
+
+    <div class="bignow" :class="(agent.state==='stopped' || agent.paused) && 'muted'">
+      <template x-if="agent.state==='stopped'"><span>агент остановлен</span></template>
+      <template x-if="agent.state!=='stopped' && agent.paused"><span>⏸ на паузе — заявки/письма не берёт</span></template>
+      <template x-if="agent.state!=='stopped' && !agent.paused">
+        <span><span x-text="agent.status_line || 'ожидание событий'"></span><span class="dots"><i></i><i></i><i></i></span></span>
+      </template>
+    </div>
+
+    <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-slate-400">
+      <span>режим:
+        <span class="font-semibold" :class="agent.dry_run ? 'text-yellow-400' : 'text-red-400'"
+              x-text="agent.dry_run ? 'DRY-RUN · в Redmine не пишет' : '⚠ БОЕВОЙ · реально пишет в Redmine'"></span></span>
+      <!-- тумблер режима: вернуть в dry-run (безопасно) / перевести в боевой (двойное подтверждение) -->
+      <button class="btn btn-ghost !py-1 !px-2.5 !text-[11px]" :disabled="busyAgent"
+              x-show="!agent.dry_run" x-cloak @click="setMode(true)"
+              title="перезапустить агента в dry-run (перестанет писать в Redmine)">→ вернуть в dry-run</button>
+      <button class="btn !py-1 !px-2.5 !text-[11px]" :disabled="busyAgent"
+              style="background:#7f1d1d;color:#fecaca;border-color:#991b1b"
+              x-show="agent.dry_run" @click="setMode(false)"
+              title="перевести агента в БОЕВОЙ режим (реальная запись в Redmine)">→ боевой режим</button>
+      <span x-show="agent.started_at">запущен: <span class="text-slate-300" x-text="agent.started_at"></span></span>
+      <div class="ml-auto flex items-center gap-2">
+        <!-- Включить: в режиме из config (боевой = красная кнопка); Выключить / Перезапустить -->
+        <button class="btn" :class="agent.dry_run ? 'btn-success' : 'btn-danger'"
+                x-show="agent.state==='stopped'" :disabled="busyAgent" @click="agentAction('start')"
+                :title="agent.dry_run ? 'включить агента (dry-run по config)' : 'включить агента в БОЕВОМ режиме (config dry_run=false)'">
+          <i data-lucide="play" class="w-3.5 h-3.5"></i>
+          <span x-text="agent.dry_run ? 'Включить' : 'Включить (БОЕВОЙ)'"></span></button>
+        <button class="btn btn-danger" x-show="agent.state!=='stopped'" x-cloak :disabled="busyAgent"
+                @click="agentAction('stop')"><i data-lucide="power" class="w-3.5 h-3.5"></i>Выключить</button>
+        <button class="btn btn-ghost" x-show="agent.state!=='stopped'" x-cloak :disabled="busyAgent"
+                @click="agentAction('restart')"><i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>Перезапустить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- плитки статистики -->
+  <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
+    <div class="tile"><i data-lucide="mail" class="w-6 h-6 text-blue-500"></i>
+      <div><div class="num" x-text="stats.mails_24h"></div><div class="cap">Письма · 24ч</div></div></div>
+    <div class="tile"><i data-lucide="ticket" class="w-6 h-6 text-purple-400"></i>
+      <div><div class="num" x-text="stats.tickets_24h"></div><div class="cap">Заявки · 24ч</div></div></div>
+    <div class="tile" :class="stats.pending>0 && 'hot-y'"><i data-lucide="hourglass" class="w-6 h-6 text-yellow-500"></i>
+      <div><div class="num" x-text="stats.pending"></div><div class="cap">Ждут решения</div></div></div>
+    <div class="tile"><i data-lucide="check-circle-2" class="w-6 h-6 text-green-500"></i>
+      <div><div class="num" x-text="stats.created_24h"></div><div class="cap">Создано · 24ч</div></div></div>
+    <div class="tile" :class="stats.errors_24h>0 && 'hot-r'"><i data-lucide="alert-octagon" class="w-6 h-6 text-red-500"></i>
+      <div><div class="num" x-text="stats.errors_24h"></div><div class="cap">Ошибки · 24ч</div></div></div>
+    <div class="tile"><i data-lucide="cpu" class="w-6 h-6 text-purple-500"></i>
+      <div><div class="num" x-text="stats.ai_calls_24h"></div><div class="cap">ИИ-вызовы · 24ч</div></div></div>
+  </div>
+
+  <!-- две колонки: живые логи | стек заявок+почты -->
+  <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-4">
+
+    <!-- ЛЕВО: живой поток логов -->
+    <div class="card !p-0 overflow-hidden flex flex-col" style="height: calc(100vh - 350px); min-height: 440px">
+      <div class="px-4 py-2.5 border-b flex items-center gap-2" style="border-color: var(--line)">
+        <i data-lucide="terminal" class="w-4 h-4 text-green-500"></i>
+        <h3 class="eyebrow">живой поток логов</h3>
+        <span class="ml-auto flex items-center gap-1.5 text-[11px]" :class="wsOk ? 'text-green-500':'text-slate-500'">
+          <span class="livedot" x-show="wsOk"></span><span x-text="wsOk ? 'стрим' : 'offline'"></span></span>
+        <button class="btn btn-ghost !py-1 !px-2.5 !text-[11px]" @click="go('logs')">развернуть</button>
+      </div>
+      <div class="term flex-1" x-ref="dterm" @scroll="onDtermScroll()">
+        <template x-for="(r,i) in dlogs" :key="i">
+          <div class="logline" :class="r.level"><span class="meta" x-text="r.at + ' ' + (r.level||'') + ' [' + (r.logger||'agent') + '] '"></span><span x-text="r.msg"></span><template x-if="r.exc"><div class="exc" x-text="r.exc"></div></template></div>
+        </template>
+        <div x-show="!dlogs.length" class="text-center text-slate-500 py-10 text-[12.5px]">ждём строки лога…</div>
+        <span class="livecursor" x-show="dlogs.length" x-cloak></span>
+      </div>
+    </div>
+
+    <!-- ПРАВО: объединённый стек заявок и почты -->
+    <div class="card !p-0 overflow-hidden flex flex-col" style="height: calc(100vh - 350px); min-height: 440px">
+      <div class="px-4 py-2.5 border-b flex items-center gap-2" style="border-color: var(--line)">
+        <i data-lucide="layers" class="w-4 h-4 text-blue-400"></i>
+        <h3 class="eyebrow">заявки и почта</h3>
+        <span x-show="pendingCount>0" x-cloak class="attn-label">
+          <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i><span x-text="pendingCount + ' ждут решения'"></span></span>
+        <span class="ml-auto text-[11px] text-slate-500" x-text="workStack.length + ' элементов'"></span>
+      </div>
+      <div class="flex-1 overflow-y-auto p-2.5 space-y-2">
+        <template x-for="w in workStack" :key="w.uid">
+          <div class="wcard" :class="'t-' + w.tier" @click="stackOpen(w)">
+            <div class="flex items-center gap-2">
+              <span class="status-dot" :class="w.dot"></span>
+              <span class="chip" :class="w.kind" x-text="w.kind==='ticket' ? 'заявка' : 'почта'"></span>
+              <span :class="vcls(w.verdict)" x-text="vlbl(w.verdict)"></span>
+              <span class="ml-auto text-[11px] text-slate-500 tabular-nums" x-text="w.at"></span>
+            </div>
+            <div class="wtitle mt-1.5">
+              <span x-show="w.issue_id" class="text-blue-400" x-text="'#' + w.issue_id + ' '"></span>
+              <span x-text="w.subject || '(без темы)'"></span>
+            </div>
+            <div class="wnote" x-show="w.note" x-text="w.note"></div>
+            <template x-if="w.awaiting"><div class="attn-label mt-1.5"><i data-lucide="hand" class="w-3.5 h-3.5"></i>ожидает вашего решения</div></template>
+
+            <!-- inline Opus-контролы: только заявки -->
+            <template x-if="w.kind==='ticket'">
+              <div class="opusbox" @click.stop>
+                <template x-if="w.otherPending">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-[11.5px] text-yellow-400 font-semibold">этап одобрения записи —</span>
+                    <button class="btn btn-warn !py-1 !px-2.5 !text-[11.5px]" @click="stackOpen(w)">решить в деталях →</button>
+                  </div>
+                </template>
+                <template x-if="!w.otherPending">
+                  <div>
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                      <span class="eyebrow">model</span>
+                      <div class="seg">
+                        <template x-for="m in OPUS_MODELS" :key="m.v">
+                          <button :class="pmodel(w)===m.v && 'on'" @click="setPick(w.issue_id,'model',m.v)" x-text="m.t"></button>
+                        </template>
+                      </div>
+                      <span class="eyebrow">effort</span>
+                      <div class="seg eff">
+                        <template x-for="e in OPUS_EFFORTS" :key="e">
+                          <button :class="peffort(w)===e && 'on'" @click="setPick(w.issue_id,'effort',e)" x-text="e"></button>
+                        </template>
+                      </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                      <button class="btn btn-purple !py-1 !px-2.5 !text-[11.5px]"
+                              x-show="w.opusPending" @click="decideOpus(w,'approved')">🤖 Запустить Opus</button>
+                      <button class="btn btn-purple !py-1 !px-2.5 !text-[11.5px]"
+                              x-show="!w.opusPending" @click="quickOpus(w)">🤖 Запустить Opus</button>
+                      <button class="btn btn-ghost !py-1 !px-2.5 !text-[11.5px]" @click="stackOpen(w)">детали →</button>
+                      <button class="btn btn-ghost !py-1 !px-2.5 !text-[11.5px]"
+                              x-show="w.opusPending" @click="decideOpus(w,'ignore')">🚫 Игнор</button>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
+        <div x-show="!workStack.length" class="text-center text-slate-500 py-14 text-[13px]">
+          пока пусто — стек наполнится из журнала (письма + заявки)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ ПИСЬМА ═══════════ -->
+<section x-show="tab==='mails'" x-cloak>
+  <div class="flex flex-wrap items-center gap-2.5 mb-4">
+    <input class="inp w-72" placeholder="поиск по теме / note…" x-model="mailQ"
+           @keydown.enter="loadMails()">
+    <select class="sel" x-model="mailVerdict">
+      <option value="">— все статусы —</option>
+      <template x-for="v in mailVerdicts" :key="v">
+        <option :value="v" x-text="vlbl(v)"></option>
+      </template>
+    </select>
+    <select class="sel" x-model="mailPeriod" @change="loadMails()">
+      <option value="">за всё время</option>
+      <option value="today">сегодня</option>
+      <option value="week">неделя</option>
+      <option value="month">месяц</option>
+    </select>
+    <button class="btn btn-primary" @click="loadMails()">Искать</button>
+    <button class="btn btn-ghost" @click="mailQ='';mailVerdict='';mailPeriod='';loadMails()">Сброс</button>
+    <span class="ml-auto text-[12px] text-slate-500" x-text="mailsShown.length + ' писем'"></span>
+  </div>
+
+  <template x-for="m in mailsShown" :key="m.key">
+    <div class="card !p-0 mb-2.5 overflow-hidden">
+      <div class="px-4 py-3 grid grid-cols-[140px_auto_auto_1fr_auto] gap-3 items-center cursor-pointer"
+           @click="mailOpen = mailOpen===m.key ? null : m.key">
+        <span class="text-[12px] text-slate-500 tabular-nums" x-text="m.last_at"></span>
+        <span class="chip">почта</span>
+        <span :class="vcls(m.verdict)" x-text="vlbl(m.verdict)"></span>
+        <span class="text-[13.5px] font-semibold break-words">
+          <span x-text="m.subject || '(без темы)'"></span>
+          <a x-show="issueUrl(m.issue_id)" :href="issueUrl(m.issue_id)" target="_blank"
+             class="text-blue-400 hover:underline ml-2 text-[12.5px]"
+             @click.stop x-text="'#' + m.issue_id + ' ↗'"></a>
+        </span>
+        <span class="text-slate-500 text-xs transition-transform"
+              :class="mailOpen===m.key && 'rotate-90'">▶</span>
+      </div>
+      <div class="px-4 pb-2.5 -mt-1 text-[12.5px] text-slate-400 break-words" x-text="m.note"></div>
+
+      <!-- таймлайн жизненного цикла -->
+      <div x-show="mailOpen===m.key" x-cloak class="border-t bg-slate-900/60 px-5 py-4" style="border-color: var(--line)">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="eyebrow">Жизненный цикл</h4>
+          <div class="flex gap-2">
+            <button x-show="m.session_id" class="btn btn-ghost !py-1 !px-2.5 !text-[11.5px]"
+                    @click="copy(resumeCmd(m.session_id), 'resume-команда')">копировать claude --resume</button>
+            <button class="btn btn-ghost !py-1 !px-2.5 !text-[11.5px]"
+                    @click="logs.q = m.kind==='ticket' ? '#'+m.entity_id : (m.subject||'').slice(0,30); logs.src='logs'; go('logs')">
+              логи сущности</button>
+          </div>
+        </div>
+        <template x-for="(r,i) in m.records" :key="i">
+          <div class="tstep">
+            <div class="dot2" x-text="i+1"></div>
+            <div>
+              <div class="flex flex-wrap items-baseline gap-2.5">
+                <span class="text-[13px] font-semibold" x-text="vlbl(r.verdict)"></span>
+                <span x-show="r.interim" class="chip !text-[9.5px]">шаг</span>
+                <span class="text-[11.5px] text-slate-500 tabular-nums" x-text="r.at"></span>
+              </div>
+              <div class="text-[12.5px] text-slate-400 break-words" x-text="r.note"></div>
+              <details x-show="r.detail" class="mt-1">
+                <summary class="text-[12px] text-blue-400 cursor-pointer select-none"
+                         x-text="'полный текст (' + (r.detail||'').length + ' симв.)'"></summary>
+                <pre class="doc-pre" x-text="r.detail"></pre>
+              </details>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </template>
+  <div x-show="!mailsShown.length" class="text-center text-slate-500 py-16 text-[13px]">
+    писем не найдено (проверь фильтры)
+  </div>
+</section>
+
+<!-- ═══════════ ЗАЯВКИ ═══════════ -->
+<section x-show="tab==='tickets'" x-cloak>
+
+  <!-- список -->
+  <div x-show="!ticket">
+    <div class="flex flex-wrap items-center gap-2.5 mb-4">
+      <input class="inp w-72" placeholder="поиск: тема / note / #id…" x-model="tQ"
+             @keydown.enter="loadTickets()">
+      <select class="sel" x-model="tVerdict">
+        <option value="">— все статусы —</option>
+        <template x-for="v in ticketVerdicts" :key="v">
+          <option :value="v" x-text="vlbl(v)"></option>
+        </template>
+      </select>
+      <select class="sel" x-model="tPeriod" @change="loadTickets()">
+        <option value="">за всё время</option>
+        <option value="today">сегодня</option>
+        <option value="week">неделя</option>
+        <option value="month">месяц</option>
+      </select>
+      <button class="btn btn-primary" @click="loadTickets()">Искать</button>
+      <button class="btn btn-ghost" @click="tQ='';tVerdict='';tPeriod='';loadTickets()">Сброс</button>
+      <span class="ml-auto text-[12px] text-slate-500" x-text="ticketsShown.length + ' заявок'"></span>
+    </div>
+
+    <template x-for="t in ticketsShown" :key="t.key">
+      <div class="card !p-0 mb-2.5 overflow-hidden">
+        <div class="px-4 py-3 grid grid-cols-[auto_140px_auto_auto_1fr_auto] gap-3 items-center cursor-pointer"
+             @click="openTicket(t.issue_id)">
+          <span class="flex items-center gap-1">
+            <span :class="tDot(t)" :title="t.awaiting_decision ? 'ожидает решения' : ''"></span>
+            <span x-show="t.has_ai" class="status-dot ai" title="есть ИИ-анализ"></span>
+          </span>
+          <span class="text-[12px] text-slate-500 tabular-nums" x-text="t.last_at"></span>
+          <span class="chip" x-text="t.pipe || 'заявка'"></span>
+          <span :class="vcls(t.verdict)" x-text="vlbl(t.verdict)"></span>
+          <span class="text-[13.5px] font-semibold break-words">
+            <span class="text-blue-400" x-text="'#' + t.issue_id"></span>
+            <span x-text="' ' + (t.subject || '(без темы)')"></span>
+          </span>
+          <span class="text-slate-500 text-xs">▶</span>
+        </div>
+        <div class="px-4 pb-2.5 -mt-1 text-[12.5px] text-slate-400 break-words flex items-center gap-3">
+          <span x-show="t.awaiting_decision" x-cloak
+                class="text-red-400 font-bold text-[11.5px] uppercase tracking-wide shrink-0">⚠ ожидает вашего решения</span>
+          <span class="truncate" x-text="t.note"></span>
+          <button class="btn btn-ghost !py-1 !px-2.5 !text-[11px] ml-auto shrink-0"
+                  @click.stop="openOpus(t.issue_id, t.subject)">🤖 Opus</button>
+        </div>
+        <!-- форма ручного вызова Opus -->
+        <div x-show="opus.issue_id===t.issue_id" x-cloak @click.stop
+             class="border-t bg-slate-900/60 px-4 py-3" style="border-color: var(--line)">
+          <div class="eyebrow text-purple-400 mb-2">Вызвать Opus по заявке</div>
+          <textarea class="inp w-full" rows="3" x-model="opus.prompt"
+                    placeholder="инструкция для Opus (пусто = пусть сам ищет похожие заявки)"></textarea>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mt-2.5">
+            <span class="eyebrow">model</span>
+            <div class="seg">
+              <template x-for="m in OPUS_MODELS" :key="m.v">
+                <button :class="opus.model===m.v && 'on'" @click="opus.model=m.v" x-text="m.t"></button>
+              </template>
+            </div>
+            <span class="eyebrow">effort</span>
+            <div class="seg eff">
+              <template x-for="e in OPUS_EFFORTS" :key="e">
+                <button :class="opus.effort===e && 'on'" @click="opus.effort=e" x-text="e"></button>
+              </template>
+            </div>
+          </div>
+          <div class="flex gap-2 mt-2.5">
+            <button class="btn btn-purple" :disabled="opus.busy" @click="sendOpus()">🤖 Запустить</button>
+            <button class="btn btn-ghost" @click="opus.issue_id=null">Отмена</button>
+          </div>
+        </div>
+      </div>
+    </template>
+    <div x-show="!ticketsShown.length" class="text-center text-slate-500 py-16 text-[13px]">
+      заявок не найдено (проверь фильтры)
+    </div>
+  </div>
+
+  <!-- детали заявки -->
+  <div x-show="ticket" x-cloak>
+    <template x-if="ticket">
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <button class="btn btn-ghost"
+                  @click="ticket=null; history.replaceState(null,'','#tickets'); loadTickets()">← к списку</button>
+          <span class="text-[12px] text-slate-500">обновлено: <span x-text="ticket.last_at"></span></span>
+        </div>
+
+        <!-- шапка -->
+        <div class="card">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="flex items-center gap-1">
+              <span :class="tDot(ticket)"></span>
+              <span x-show="ticket.has_ai" class="status-dot ai" title="есть ИИ-анализ"></span>
+            </span>
+            <h2 class="text-lg font-semibold break-words">
+              <a x-show="issueUrl(ticket.issue_id)" :href="issueUrl(ticket.issue_id)" target="_blank"
+                 class="text-blue-400 hover:underline" x-text="'#' + ticket.issue_id + ' ↗'"></a>
+              <span x-show="!issueUrl(ticket.issue_id)" class="text-blue-400" x-text="'#' + ticket.issue_id"></span>
+              <span x-text="' ' + (ticket.subject || '(без темы)')"></span>
+            </h2>
+            <span class="chip" x-text="ticket.pipe || 'заявка'"></span>
+            <span :class="vcls(ticket.verdict)" x-text="vlbl(ticket.verdict)"></span>
+            <div class="ml-auto flex items-center gap-2">
+              <button class="btn btn-ghost !py-1 !px-2.5 !text-[11.5px]"
+                      @click="openOpus(ticket.issue_id, ticket.subject)">🤖 Вызвать Opus</button>
+              <button x-show="ticket.session_id" class="btn btn-ghost !py-1 !px-2.5 !text-[11.5px]"
+                      @click="copy(resumeCmd(ticket.session_id), 'resume-команда')"
+                      :title="resumeCmd(ticket.session_id)">копировать claude --resume</button>
+            </div>
+          </div>
+          <div class="mt-2 text-[12.5px] text-slate-400 break-words" x-text="ticket.note"></div>
+          <!-- форма ручного вызова Opus -->
+          <div x-show="opus.issue_id===ticket.issue_id" x-cloak
+               class="mt-3 border-t pt-3" style="border-color: var(--line)">
+            <div class="eyebrow text-purple-400 mb-2">Вызвать Opus по заявке</div>
+            <textarea class="inp w-full" rows="3" x-model="opus.prompt"
+                      placeholder="инструкция для Opus (пусто = пусть сам ищет похожие заявки)"></textarea>
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mt-2.5">
+              <span class="eyebrow">model</span>
+              <div class="seg">
+                <template x-for="m in OPUS_MODELS" :key="m.v">
+                  <button :class="opus.model===m.v && 'on'" @click="opus.model=m.v" x-text="m.t"></button>
+                </template>
+              </div>
+              <span class="eyebrow">effort</span>
+              <div class="seg eff">
+                <template x-for="e in OPUS_EFFORTS" :key="e">
+                  <button :class="opus.effort===e && 'on'" @click="opus.effort=e" x-text="e"></button>
+                </template>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-2.5">
+              <button class="btn btn-purple" :disabled="opus.busy" @click="sendOpus()">🤖 Запустить</button>
+              <button class="btn btn-ghost" @click="opus.issue_id=null">Отмена</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- запрос одобрения по этой заявке (новая схема: 2 этапа Клиент C / Opus / игнор) -->
+        <template x-if="ticket.approval">
+          <div class="card" :class="appCardCls(ticket.approval)">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span x-show="appKind(ticket.approval)!=='opus'"><i data-lucide="shield-alert" class="w-4 h-4" :class="appTitleCls(ticket.approval)"></i></span>
+              <span x-show="appKind(ticket.approval)==='opus'"><i data-lucide="cpu" class="w-4 h-4 text-purple-400"></i></span>
+              <h3 class="text-[11px] font-semibold uppercase tracking-wider" :class="appTitleCls(ticket.approval)" x-text="appTitle(ticket.approval)"></h3>
+              <span :class="vcls(appBadgeV(ticket.approval))" x-text="vlbl(appBadgeV(ticket.approval))"></span>
+            </div>
+
+            <template x-if="appKind(ticket.approval)==='opus' && ticket.approval.prompt">
+              <div class="mb-2">
+                <div class="eyebrow text-purple-400 mb-1">Инструкция Opus</div>
+                <pre class="doc-pre !mt-0" x-text="ticket.approval.prompt"></pre>
+              </div>
+            </template>
+
+            <div class="eyebrow mb-1" x-text="appProposalLabel(ticket.approval)"></div>
+            <pre class="doc-pre !mt-0" x-text="ticket.approval.proposal || '(нет предпросмотра)'"></pre>
+
+            <template x-if="appKind(ticket.approval)==='branch'">
+              <div class="flex flex-wrap gap-2 mt-3">
+                <button class="btn btn-success"
+                        @click="decide(ticket.issue_id,'approved','Подтвердить ветку «'+pipeLabel(ticket.approval.pipe)+'» для заявки #'+ticket.issue_id+'? Дальше агент прогонит SELECT\'ы и попросит одобрить запись.')">✅ Подтвердить ветку</button>
+                <button class="btn btn-warn" @click="decide(ticket.issue_id,'manual')">✋ Вручную</button>
+                <button class="btn btn-ghost" @click="decide(ticket.issue_id,'ignore')">🚫 Игнор</button>
+              </div>
+            </template>
+            <template x-if="appKind(ticket.approval)==='write'">
+              <div class="flex flex-wrap gap-2 mt-3">
+                <button class="btn btn-danger"
+                        @click="decide(ticket.issue_id,'approved','Разрешить БОЕВУЮ запись в БД по заявке #'+ticket.issue_id+'?')">✅ Одобрить запись</button>
+                <button class="btn btn-warn" @click="decide(ticket.issue_id,'manual')">✋ Вручную</button>
+                <button class="btn btn-ghost" @click="decide(ticket.issue_id,'ignore')">🚫 Игнор</button>
+              </div>
+            </template>
+            <template x-if="appKind(ticket.approval)==='opus'">
+              <div class="mt-3">
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-2.5">
+                  <span class="eyebrow">model</span>
+                  <div class="seg">
+                    <template x-for="m in OPUS_MODELS" :key="m.v">
+                      <button :class="(ticket.approval.model||'claude-opus-4-8')===m.v && 'on'" @click="ticket.approval.model=m.v" x-text="m.t"></button>
+                    </template>
+                  </div>
+                  <span class="eyebrow">effort</span>
+                  <div class="seg eff">
+                    <template x-for="e in OPUS_EFFORTS" :key="e">
+                      <button :class="(ticket.approval.effort||'high')===e && 'on'" @click="ticket.approval.effort=e" x-text="e"></button>
+                    </template>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button class="btn btn-purple"
+                          @click="decide(ticket.issue_id,'approved','Запустить Opus по заявке #'+ticket.issue_id+' (model='+(ticket.approval.model||'claude-opus-4-8')+', effort='+(ticket.approval.effort||'high')+')?', ticket.approval.model, ticket.approval.effort)">🤖 Запустить Opus</button>
+                  <button class="btn btn-ghost" @click="decide(ticket.issue_id,'ignore')">🚫 Не запускать / игнор</button>
+                  <button class="btn btn-warn" @click="decide(ticket.issue_id,'manual')">✋ Вручную</button>
+                </div>
+              </div>
+            </template>
+            <template x-if="appKind(ticket.approval)==='legacy'">
+              <div class="flex flex-wrap gap-2 mt-3">
+                <button class="btn btn-success" @click="decide(ticket.issue_id,'approved')">✓ Одобрить и выполнить</button>
+                <button class="btn btn-warn" @click="decide(ticket.issue_id,'manual')">✋ Вручную</button>
+                <button class="btn btn-ghost" @click="decide(ticket.issue_id,'ignore')">🚫 Игнор</button>
+              </div>
+            </template>
+            <template x-if="appKind(ticket.approval)==='post'">
+              <div class="flex flex-wrap gap-2 mt-3">
+                <button class="btn btn-purple" @click="decide(ticket.issue_id,'approved','Опубликовать разбор ИИ приватным комментом в заявку #'+ticket.issue_id+'?')">📝 Опубликовать</button>
+                <button class="btn btn-warn" @click="decide(ticket.issue_id,'manual')">✋ Пока нет</button>
+                <button class="btn btn-ghost" @click="decide(ticket.issue_id,'ignore')">🚫 Игнор</button>
+              </div>
+            </template>
+            <template x-if="appKind(ticket.approval)==='reviewing'">
+              <div class="mt-3 text-[12px] text-slate-400">Опус проверяет предложенное решение. Кнопки одобрения появятся, когда ревью завершится.</div>
+            </template>
+          </div>
+        </template>
+
+        <!-- степпер -->
+        <div class="card">
+          <h3 class="eyebrow mb-1">Шаги обработки</h3>
+          <div class="stepper">
+            <template x-for="(r,i) in ticket.records" :key="i">
+              <div class="st" :class="(i === ticket.records.length-1 ? 'cur' : 'past') + (i === 0 ? ' first' : '')">
+                <div class="circ" x-text="i === ticket.records.length-1 ? '●' : '✓'"></div>
+                <div class="lbl" x-text="vlbl(r.verdict)"></div>
+                <div class="tm" x-text="r.at.slice(11)"></div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- таймлайн с полными текстами -->
+        <div class="card">
+          <h3 class="eyebrow mb-3">Таймлайн</h3>
+          <template x-for="(r,i) in ticket.records" :key="i">
+            <div class="tstep">
+              <div class="dot2" x-text="i+1"></div>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-baseline gap-2.5">
+                  <span :class="vcls(r.verdict)" x-text="vlbl(r.verdict)"></span>
+                  <span x-show="r.interim" class="chip !text-[9.5px]">шаг</span>
+                  <span class="text-[11.5px] text-slate-500 tabular-nums" x-text="r.at"></span>
+                </div>
+                <div class="text-[12.5px] text-slate-400 break-words mt-0.5" x-text="r.note"></div>
+                <details x-show="r.detail" class="mt-1" :open="!r.interim">
+                  <summary class="text-[12px] text-blue-400 cursor-pointer select-none"
+                           x-text="'полный текст (' + (r.detail||'').length + ' симв.)'"></summary>
+                  <pre class="doc-pre" x-text="r.detail"></pre>
+                </details>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- логи тикета -->
+        <div class="card !p-0 overflow-hidden">
+          <div class="px-4 py-3 flex items-center gap-3 cursor-pointer border-b"
+               style="border-color: var(--line)" @click="ticketLogsOpen = !ticketLogsOpen">
+            <i data-lucide="scroll-text" class="w-4 h-4 text-slate-400"></i>
+            <h3 class="eyebrow">Логи заявки <span x-text="'#' + ticket.issue_id"></span></h3>
+            <span class="text-[11px] text-slate-500"
+                  x-text="'логи: ' + ticketLogs.logs.length + ' · трассировка: ' + ticketLogs.trace.length"></span>
+            <span class="ml-auto text-slate-500 text-xs transition-transform"
+                  :class="ticketLogsOpen && 'rotate-90'">▶</span>
+          </div>
+          <div x-show="ticketLogsOpen" x-cloak class="p-4">
+            <div class="inline-flex gap-0.5 bg-slate-800 border rounded-lg p-0.5 mb-3" style="border-color: var(--line)">
+              <button class="navtab !py-1 !px-3" :class="ticketLogTab==='logs' && 'on'"
+                      @click="ticketLogTab='logs'">Логи</button>
+              <button class="navtab !py-1 !px-3" :class="ticketLogTab==='trace' && 'on'"
+                      @click="ticketLogTab='trace'">Трассировка</button>
+            </div>
+            <div class="max-h-[420px] overflow-y-auto">
+              <template x-if="ticketLogTab==='logs'">
+                <div>
+                  <template x-for="(r,i) in ticketLogs.logs" :key="i">
+                    <div class="logline" :class="r.level"><span class="meta" x-text="r.at + ' ' + r.level + ' [' + r.logger + '] '"></span><span x-text="r.msg"></span><template x-if="r.exc"><div class="exc" x-text="r.exc"></div></template></div>
+                  </template>
+                  <div x-show="!ticketLogs.logs.length" class="text-slate-500 text-[12.5px] py-4 text-center">
+                    в логах упоминаний нет</div>
+                </div>
+              </template>
+              <template x-if="ticketLogTab==='trace'">
+                <div>
+                  <template x-for="(r,i) in ticketLogs.trace" :key="i">
+                    <div class="logline" :class="r.kind==='status' && 'status'"><span class="meta" x-text="r.at + ' ' + r.kind + (r.thread ? ' {'+r.thread+'}' : '') + ' '"></span><span x-text="r.msg"></span></div>
+                  </template>
+                  <div x-show="!ticketLogs.trace.length" class="text-slate-500 text-[12.5px] py-4 text-center">
+                    в трассировке упоминаний нет</div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</section>
+
+<!-- ═══════════ ОДОБРЕНИЯ ═══════════ -->
+<section x-show="tab==='approvals'" x-cloak>
+  <div class="flex items-center gap-3 mb-4">
+    <h2 class="text-base font-semibold">Запросы на одобрение боевой записи</h2>
+    <button class="btn btn-ghost !py-1" @click="loadApprovals()">Обновить</button>
+    <span class="ml-auto text-[12px] text-slate-500"
+          x-text="approvals.length ? approvals.length + ' ждут решения' : ''"></span>
+  </div>
+
+  <template x-for="a in approvals" :key="a.issue_id">
+    <div class="card mb-3" :class="appCardCls(a)">
+      <div class="flex flex-wrap items-center gap-3 mb-2">
+        <span x-show="appKind(a)!=='opus'"><i data-lucide="shield-alert" class="w-4 h-4" :class="appTitleCls(a)"></i></span>
+        <span x-show="appKind(a)==='opus'"><i data-lucide="cpu" class="w-4 h-4 text-purple-400"></i></span>
+        <span class="text-[11px] font-bold uppercase tracking-wider" :class="appTitleCls(a)" x-text="appTitle(a)"></span>
+        <span class="chip" x-text="pipeLabel(a.pipe)"></span>
+        <span :class="vcls(appBadgeV(a))" x-text="vlbl(appBadgeV(a))"></span>
+        <span class="font-semibold text-[13.5px]">
+          <a x-show="issueUrl(a.issue_id)" :href="issueUrl(a.issue_id)" target="_blank"
+             class="text-blue-400 hover:underline" x-text="'#' + a.issue_id + ' ↗'"></a>
+          <span x-show="!issueUrl(a.issue_id)" class="text-blue-400" x-text="'#' + a.issue_id"></span>
+          <span x-text="' ' + (a.subject || '(без темы)')"></span>
+        </span>
+        <span class="ml-auto text-[11.5px] text-slate-500 tabular-nums" x-text="a.created_at"></span>
+      </div>
+
+      <!-- инструкция Opus (если задана) -->
+      <template x-if="appKind(a)==='opus' && a.prompt">
+        <div class="mb-2">
+          <div class="eyebrow text-purple-400 mb-1">Инструкция Opus</div>
+          <pre class="doc-pre !mt-0" x-text="a.prompt"></pre>
+        </div>
+      </template>
+
+      <div class="eyebrow mb-1" x-text="appProposalLabel(a)"></div>
+      <pre class="doc-pre !mt-0" x-text="a.proposal || '(нет предпросмотра)'"></pre>
+
+      <!-- этап 1: подтверждение ветки -->
+      <template x-if="appKind(a)==='branch'">
+        <div class="flex flex-wrap gap-2 mt-3.5">
+          <button class="btn btn-success"
+                  @click="decide(a.issue_id,'approved','Подтвердить ветку «'+pipeLabel(a.pipe)+'» для заявки #'+a.issue_id+'? Дальше агент прогонит SELECT\'ы и попросит одобрить запись.')">✅ Подтвердить ветку</button>
+          <button class="btn btn-warn" @click="decide(a.issue_id,'manual')">✋ Вручную</button>
+          <button class="btn btn-ghost" @click="decide(a.issue_id,'ignore')">🚫 Игнор</button>
+        </div>
+      </template>
+
+      <!-- этап 2: разрешение боевой записи -->
+      <template x-if="appKind(a)==='write'">
+        <div class="flex flex-wrap gap-2 mt-3.5">
+          <button class="btn btn-danger"
+                  @click="decide(a.issue_id,'approved','Разрешить БОЕВУЮ запись в БД по заявке #'+a.issue_id+'?')">✅ Одобрить запись</button>
+          <button class="btn btn-warn" @click="decide(a.issue_id,'manual')">✋ Вручную</button>
+          <button class="btn btn-ghost" @click="decide(a.issue_id,'ignore')">🚫 Игнор</button>
+        </div>
+      </template>
+
+      <!-- эскалация к Opus: выбор model/effort per-заявка -->
+      <template x-if="appKind(a)==='opus'">
+        <div class="mt-3.5">
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-2.5">
+            <span class="eyebrow">model</span>
+            <div class="seg">
+              <template x-for="m in OPUS_MODELS" :key="m.v">
+                <button :class="(a.model||'claude-opus-4-8')===m.v && 'on'" @click="a.model=m.v" x-text="m.t"></button>
+              </template>
+            </div>
+            <span class="eyebrow">effort</span>
+            <div class="seg eff">
+              <template x-for="e in OPUS_EFFORTS" :key="e">
+                <button :class="(a.effort||'high')===e && 'on'" @click="a.effort=e" x-text="e"></button>
+              </template>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button class="btn btn-purple"
+                    @click="decide(a.issue_id,'approved','Запустить Opus по заявке #'+a.issue_id+' (model='+(a.model||'claude-opus-4-8')+', effort='+(a.effort||'high')+')?', a.model, a.effort)">🤖 Запустить Opus</button>
+            <button class="btn btn-ghost" @click="decide(a.issue_id,'ignore')">🚫 Не запускать / игнор</button>
+            <button class="btn btn-warn" @click="decide(a.issue_id,'manual')">✋ Вручную</button>
+          </div>
+        </div>
+      </template>
+
+      <!-- старая одноэтапная схема (обратная совместимость) -->
+      <template x-if="appKind(a)==='legacy'">
+        <div class="flex flex-wrap gap-2 mt-3.5">
+          <button class="btn btn-success" @click="decide(a.issue_id,'approved')">✓ Одобрить и выполнить</button>
+          <button class="btn btn-warn" @click="decide(a.issue_id,'manual')">✋ Вручную</button>
+          <button class="btn btn-ghost" @click="decide(a.issue_id,'ignore')">🚫 Игнор</button>
+        </div>
+      </template>
+      <!-- публикация черновика Opus (stage=post) -->
+      <template x-if="appKind(a)==='post'">
+        <div class="flex flex-wrap gap-2 mt-3.5">
+          <button class="btn btn-purple" @click="decide(a.issue_id,'approved','Опубликовать разбор ИИ приватным комментом в заявку #'+a.issue_id+'?')">📝 Опубликовать</button>
+          <button class="btn btn-warn" @click="decide(a.issue_id,'manual')">✋ Пока нет</button>
+          <button class="btn btn-ghost" @click="decide(a.issue_id,'ignore')">🚫 Игнор</button>
+        </div>
+      </template>
+      <!-- идёт фоновый ИИ-ревью (stage=reviewing): решать нечего -->
+      <template x-if="appKind(a)==='reviewing'">
+        <div class="mt-3.5 text-[12px] text-slate-400">Опус проверяет предложенное решение. Кнопки одобрения появятся, когда ревью завершится.</div>
+      </template>
+    </div>
+  </template>
+  <div x-show="!approvals.length" class="text-center text-slate-500 py-20 text-[13px]">
+    запросов на одобрение нет — агент ничего боевого не предлагает
+  </div>
+</section>
+
+<!-- ═══════════ CLAUDE ЧАТ ═══════════ -->
+<section x-show="tab==='chat'" x-cloak>
+  <div class="card !p-0 overflow-hidden max-w-[900px] mx-auto flex flex-col" style="height: calc(100vh - 210px)">
+    <div class="px-4 py-3 border-b flex items-center gap-3" style="border-color: var(--line)">
+      <i data-lucide="message-square" class="w-4 h-4 text-purple-500"></i>
+      <span class="font-semibold text-[13.5px]">Claude</span>
+      <span class="text-[11.5px] text-slate-500">headless <code>claude -p</code>, по подписке, без инструментов</span>
+      <div class="ml-auto flex items-center gap-2">
+        <span x-show="chat.sessionId" class="text-[11px] text-slate-500">
+          session: <code class="text-slate-300" x-text="(chat.sessionId||'').slice(0,13) + '…'"></code></span>
+        <button x-show="chat.sessionId" class="btn btn-ghost !py-1 !px-2.5 !text-[11.5px]"
+                @click="copy(resumeCmd(chat.sessionId), 'resume-команда')"
+                :title="resumeCmd(chat.sessionId)">копировать resume</button>
+        <button class="btn btn-ghost !py-1 !px-2.5 !text-[11.5px]" @click="chatNew()">новая сессия</button>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-4 space-y-3" x-ref="chatbox">
+      <div x-show="!chat.messages.length" class="text-center text-slate-500 text-[13px] pt-16">
+        Напиши сообщение — уйдёт в <code>claude -p</code> (таймаут 120 сек).<br>
+        Продолжение разговора идёт через <code>--resume &lt;session_id&gt;</code> автоматически.
+      </div>
+      <template x-for="(msg,i) in chat.messages" :key="i">
+        <div class="flex" :class="msg.role==='user' && 'justify-end'">
+          <div class="msg" :class="msg.role">
+            <span x-text="msg.text"></span>
+            <div class="mmeta" x-text="msg.at + (msg.meta ? ' · ' + msg.meta : '')"></div>
+          </div>
+        </div>
+      </template>
+      <div x-show="chat.busy" x-cloak class="flex items-center gap-2.5 text-slate-400 text-[13px]">
+        <span class="spinner"></span>думает…
+      </div>
+    </div>
+
+    <div class="p-3 border-t flex gap-2" style="border-color: var(--line)">
+      <input class="inp flex-1" placeholder="Ваше сообщение… (Enter — отправить)"
+             x-model="chat.input" @keydown.enter="chatSend()" :disabled="chat.busy">
+      <button class="btn btn-primary" @click="chatSend()" :disabled="chat.busy || !chat.input.trim()">
+        Отправить</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ ЛОГИ ═══════════ -->
+<section x-show="tab==='logs'" x-cloak>
+  <div class="flex flex-wrap items-center gap-2.5 mb-3">
+    <div class="inline-flex gap-0.5 bg-slate-800 border rounded-lg p-0.5" style="border-color: var(--line)">
+      <button class="navtab !py-1.5 !px-4" :class="logs.src==='logs' && 'on'"
+              @click="logs.src='logs'; loadLogs()">Логи</button>
+      <button class="navtab !py-1.5 !px-4" :class="logs.src==='trace' && 'on'"
+              @click="logs.src='trace'; loadLogs()">Трассировка</button>
+    </div>
+    <select class="sel" x-model="logs.level" @change="loadLogs()" x-show="logs.src==='logs'">
+      <option value="">все уровни</option>
+      <option value="INFO">INFO</option>
+      <option value="WARNING">WARNING</option>
+      <option value="ERROR">ERROR</option>
+    </select>
+    <input class="inp w-44" placeholder="логгер (agent.llm…)" x-model="logs.logger"
+           @keydown.enter="loadLogs()" x-show="logs.src==='logs'">
+    <input class="inp w-64" placeholder="подстрока… (Enter)" x-model="logs.q" @keydown.enter="loadLogs()">
+    <button class="btn btn-primary" @click="loadLogs()">Применить</button>
+    <button class="btn btn-ghost" @click="logs.q='';logs.level='';logs.logger='';loadLogs()">Сброс</button>
+    <a class="btn btn-ghost" :href="'/api/export/logs?src=' + logs.src">
+      <i data-lucide="download" class="w-3.5 h-3.5"></i>Экспорт</a>
+    <span class="ml-auto flex items-center gap-2 text-[11.5px]"
+          :class="logs.auto ? 'text-green-500' : 'text-yellow-500'">
+      <span class="status-dot" :class="logs.auto ? 'active' : 'pending'"></span>
+      <span x-text="logs.auto ? 'auto-scroll' : 'пауза (прокрути вниз)'"></span>
+    </span>
+  </div>
+
+  <div class="card !p-2 h-[calc(100vh-250px)] overflow-y-auto relative" x-ref="logbox" @scroll="onLogScroll()">
+    <template x-if="logs.src==='logs'">
+      <div>
+        <template x-for="(r,i) in logs.entries" :key="i">
+          <div class="logline" :class="r.level"><span class="meta" x-text="r.at + ' ' + r.level + ' [' + r.logger + '] '"></span><span x-text="r.msg"></span><template x-if="r.exc"><div class="exc" x-text="r.exc"></div></template></div>
+        </template>
+      </div>
+    </template>
+    <template x-if="logs.src==='trace'">
+      <div>
+        <template x-for="(r,i) in logs.entries" :key="i">
+          <div class="logline" :class="r.kind==='status' && 'status'"><span class="meta" x-text="r.at + ' ' + r.kind + (r.thread ? ' {'+r.thread+'}' : '') + ' '"></span><span x-text="r.msg"></span></div>
+        </template>
+      </div>
+    </template>
+    <div x-show="!logs.entries.length" class="text-center text-slate-500 py-20 text-[13px]">
+      пусто — файл ещё не создан или ничего не подошло под фильтр
+    </div>
+  </div>
+  <button x-show="!logs.auto" x-cloak
+          class="btn btn-primary fixed bottom-8 right-10 shadow-lg"
+          @click="logs.auto=true; scrollLogs(true)">↓ к новым строкам</button>
+</section>
+
+</main>
+
+<!-- toast -->
+<div x-show="toast" x-cloak x-transition
+     class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-lg border text-[13px] font-medium shadow-xl"
+     :class="toast && toast.ok ? 'bg-slate-800 border-green-700 text-green-300' : 'bg-slate-800 border-red-700 text-red-300'"
+     x-text="toast && toast.text"></div>
+
+<script>document.addEventListener("DOMContentLoaded", () => lucide.createIcons());</script>
+</body>
+</html>
